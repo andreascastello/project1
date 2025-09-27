@@ -1,0 +1,17 @@
+---
+alwaysApply: true
+---
+
+# Global rule
+
+This project is an interactive, dual-persona music experience that blends a 3D scene with album-driven navigation.
+There are two artistic facets:
+	•	FEMTOGO — the dark/night side (grayscale, moody).
+	•	Baby Hayabusa — the light/day side (warm, romantic).
+
+Users explore a single illustrated environment populated with 3D elements (characters/objects).
+Each 3D element = one album. Selecting an element focuses the camera, reveals color, and opens a Spotify player for that album.
+Progress unlocks a flower that acts as a facets transition (closed → transition; open → its own album on the light side).
+Transitions use a black screen with a random white quote before switching facets.
+
+We build this as a React web app with a performant 3D layer and elegant UI/UX.
