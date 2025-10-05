@@ -1,44 +1,84 @@
-import React, { Suspense, useCallback } from 'react'
+import React, { Suspense, useCallback, useRef } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing'
 import * as THREE from 'three'
+import { useActiveModel } from '../state/ActiveModelContext'
 import { SceneLights } from './SceneLights'
 import { ModelCollection } from '../components/ModelCollection'
 import { FluidCameraRig } from './FluidCameraRig'
-import { useActiveModel } from '../state/ActiveModelContext'
+import { useStableModelCache } from '../hooks/useStableModelCache'
 import { models } from '../models/models.config'
 
+const FOV_DEG = 75
+function computeFocusFromObject(root: THREE.Object3D) {
+  const box = new THREE.Box3().setFromObject(root)
+  const center = box.getCenter(new THREE.Vector3())
+  const sphere = box.getBoundingSphere(new THREE.Sphere())
+  const radius = sphere.radius || 1
+  const fov = THREE.MathUtils.degToRad(FOV_DEG)
+  const distance = (radius / Math.tan(fov / 2)) * 1.2 // padding 20%
+  return { center, distance }
+}
 
+// Dual pass renderer: layer 1 (inactive) in grayscale, layer 2 (active) in color overlaid.
+// When a model is active, we freeze the camera transform for pass 1 so the background appears static
+// while OrbitControls move the live camera for the active object.
 const DualPassRenderer: React.FC = () => {
   const { gl, camera, scene, raycaster } = useThree()
+  const { activeModelName } = useActiveModel()
   const composerRef = React.useRef<any>(null)
 
-  useFrame((_, dt) => {
-    // Transparent clear to see CSS background
+  // Freeze camera transform when entering an active focus
+  const frozenPos = React.useRef(new THREE.Vector3())
+  const frozenQuat = React.useRef(new THREE.Quaternion())
+  const hasFrozen = React.useRef(false)
+
+  React.useEffect(() => {
+    if (activeModelName) {
+      frozenPos.current.copy(camera.position)
+      frozenQuat.current.copy(camera.quaternion)
+      hasFrozen.current = true
+    } else {
+      hasFrozen.current = false
+    }
+  }, [activeModelName, camera])
+
+  useFrame(() => {
     gl.setClearColor(0x000000, 0)
 
-    // PASS 1: render layer 1 (all non-active models) in grayscale via composer
+    // Save live camera transform
+    const livePos = new THREE.Vector3().copy(camera.position)
+    const liveQuat = new THREE.Quaternion().copy(camera.quaternion)
+
+    // PASS 1: grayscale on layer 1 (inactive). If active, render with frozen camera so background is static
     camera.layers.set(1)
     gl.autoClear = true
+    if (hasFrozen.current) {
+      camera.position.copy(frozenPos.current)
+      camera.quaternion.copy(frozenQuat.current)
+      camera.updateMatrixWorld()
+    }
     composerRef.current?.render()
 
-    // PASS 2: render only active layer (2) in color over the top
+    // Restore live camera for the color overlay
+    if (hasFrozen.current) {
+      camera.position.copy(livePos)
+      camera.quaternion.copy(liveQuat)
+      camera.updateMatrixWorld()
+    }
+
+    // PASS 2: color overlay of layer 2 (active)
     camera.layers.set(2)
     gl.autoClear = false
     gl.clearDepth()
     gl.render(scene, camera)
 
-    // Restore layers for R3F raycaster (so clicks see both active + inactive models)
+    // Restore layers so raycaster sees both
     camera.layers.enable(1)
     camera.layers.enable(2)
-
-    // Also restore raycaster layers so pointer events hit both layers
     raycaster.layers.enable(1)
     raycaster.layers.enable(2)
-
-    // Optional: restore full layers for any subsequent operations (not strictly needed)
-    // camera.layers.enable(1); camera.layers.enable(2)
   }, 2)
 
   return (
@@ -50,60 +90,69 @@ const DualPassRenderer: React.FC = () => {
 
 export const SceneCanvas: React.FC = () => {
   const { activeModelName, setActiveModelName, setCameraTarget } = useActiveModel()
+  const loaded = useStableModelCache() // ensure models are loaded
+
+  const controlsRef = useRef<any>(null)
 
   const handleSelect = useCallback((name: string) => {
     if (name === '') {
-      // Désélectionner - remettre la caméra en position initiale
       setActiveModelName(null)
       setCameraTarget({ pos: [0, 0, 12], look: [0, 0, 0] })
+      // reset orbit target to scene origin
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, 0, 0)
+        controlsRef.current.update()
+      }
       return
     }
-    
-    const model = models.find(m => m.name === name)
-    if (!model) return
-    // Calcul d'une position caméra simple devant le modèle
-    const distance = 3 + model.scale * 0.5
-    const pos: [number, number, number] = [
-      model.position[0],
-      model.position[1],
-      model.position[2] + distance,
-    ]
+
+    const entry = loaded[name]
+    if (!entry) return
+
+    // compute true center & distance from the actual loaded glTF scene
+    const { center, distance } = computeFocusFromObject(entry.gltf.scene)
+
+    const pos: [number, number, number] = [center.x, center.y, center.z + distance]
     setActiveModelName(name)
-    setCameraTarget({ pos, look: model.position })
-  }, [setActiveModelName, setCameraTarget])
+    setCameraTarget({ pos, look: [center.x, center.y, center.z] })
+
+    if (controlsRef.current) {
+      controlsRef.current.target.copy(center)
+      controlsRef.current.update()
+    }
+  }, [loaded, setActiveModelName, setCameraTarget])
 
   return (
     <Canvas
       camera={{ position: [0, 0, 12], fov: 75 }}
       dpr={[1, 2]}
-      gl={{ 
-        antialias: true, 
-        alpha: true, // Transparence pour voir le background derrière
-        powerPreference: "high-performance",
-        stencil: false,
-        depth: true
-      }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false, depth: true }}
       shadows={false}
       frameloop="always"
-      style={{
-        width: '100vw',
-        height: '100vh',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 5, // Au-dessus des 3 layers CSS (1,2,3) + overlay (4)
-      }}
+      style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 5 }}
+      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
       <SceneLights />
       <Suspense fallback={null}>
-        {/* N&B de toute la scène + overlay couleur pour l'actif */}
         <DualPassRenderer />
-        
-        <FluidCameraRig enabled={true} />
+        <FluidCameraRig enabled />
         <ModelCollection activeModelName={activeModelName} onSelect={handleSelect} />
         <Environment preset="night" environmentIntensity={0.4} />
       </Suspense>
-      <OrbitControls enabled={false} enableZoom={false} enableRotate={false} enablePan={false} />
+      <OrbitControls
+        ref={controlsRef}
+        enabled={!!activeModelName}
+        enableRotate={!!activeModelName}
+        enableZoom={!!activeModelName}
+        enablePan={false}
+        makeDefault
+        enableDamping
+        dampingFactor={0.08}
+        rotateSpeed={0.9}
+        zoomSpeed={0.8}
+        minDistance={1}
+        maxDistance={50}
+      />
     </Canvas>
   )
 }
