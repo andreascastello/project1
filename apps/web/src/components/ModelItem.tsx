@@ -12,8 +12,7 @@ interface ModelItemProps {
 
 export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onSelect, activeModelName }) => {
   const groupRef = useRef<THREE.Group>(null)
-  const draggingRef = useRef(false)
-  const lastPointerRef = useRef<{ x: number, y: number } | null>(null)
+  // La rotation par drag est gérée par OrbitControls côté scène
 
   useEffect(() => {
     const group = groupRef.current
@@ -54,34 +53,10 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     document.body.style.cursor = 'default'
   }, [])
 
-  // Drag rotation uniquement pour l'objet actif
-  const handlePointerDown = useCallback((e: any) => {
-    if (!isActive) return
-    e.stopPropagation()
-    draggingRef.current = true
-    lastPointerRef.current = { x: e.clientX, y: e.clientY }
-  }, [isActive])
-
-  const handlePointerMove = useCallback((e: any) => {
-    if (!isActive || !draggingRef.current) return
-    e.stopPropagation()
-    const group = groupRef.current
-    if (!group || !lastPointerRef.current) return
-    const dx = e.clientX - lastPointerRef.current.x
-    const dy = e.clientY - lastPointerRef.current.y
-    lastPointerRef.current = { x: e.clientX, y: e.clientY }
-    // Rotation simple: horizontale autour de Y, verticale autour de X
-    const rotationSpeed = 0.005
-    group.rotation.y += dx * rotationSpeed
-    group.rotation.x += dy * rotationSpeed
-  }, [isActive])
-
-  const handlePointerUp = useCallback((e: any) => {
-    if (!isActive) return
-    e.stopPropagation()
-    draggingRef.current = false
-    lastPointerRef.current = null
-  }, [isActive])
+  // Supprimer les handlers de drag pour ne pas interférer avec OrbitControls
+  const handlePointerDown = undefined as any
+  const handlePointerMove = undefined as any
+  const handlePointerUp = undefined as any
 
   return (
     <group
@@ -89,9 +64,9 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       onClick={handleClick}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      onPointerDown={undefined}
+      onPointerMove={undefined}
+      onPointerUp={undefined}
       position={loadedModel.position}
       rotation={loadedModel.rotation}
       scale={isActive ? loadedModel.scale * 1.3 : loadedModel.scale}

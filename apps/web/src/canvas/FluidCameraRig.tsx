@@ -3,9 +3,9 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useActiveModel } from '../state/ActiveModelContext'
 
-type Props = { enabled?: boolean }
+type Props = { enabled?: boolean, interruptRef?: React.MutableRefObject<boolean> }
 
-export const FluidCameraRig: React.FC<Props> = ({ enabled = true }) => {
+export const FluidCameraRig: React.FC<Props> = ({ enabled = true, interruptRef }) => {
   const { camera } = useThree()
   const { cameraTarget, activeModelName } = useActiveModel()
 
@@ -26,6 +26,12 @@ export const FluidCameraRig: React.FC<Props> = ({ enabled = true }) => {
 
     // When a model is active, we only ease UNTIL we arrive once, then we stop updating position
     if (activeModelName) {
+      // If user started interacting with OrbitControls, immediately stop any automated lerp
+      if (interruptRef?.current) {
+        arrivedRef.current = true
+        interruptRef.current = false
+      }
+
       const switched = lastActiveRef.current !== activeModelName
       const movedTarget = lastTargetPos.current.distanceToSquared(desired) > 1e-6
       if (switched || movedTarget) {

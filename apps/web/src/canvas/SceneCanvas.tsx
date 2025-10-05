@@ -11,13 +11,14 @@ import { useStableModelCache } from '../hooks/useStableModelCache'
 import { models } from '../models/models.config'
 
 const FOV_DEG = 75
+const FOCUS_DISTANCE_MULTIPLIER = 3
 function computeFocusFromObject(root: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(root)
   const center = box.getCenter(new THREE.Vector3())
   const sphere = box.getBoundingSphere(new THREE.Sphere())
   const radius = sphere.radius || 1
   const fov = THREE.MathUtils.degToRad(FOV_DEG)
-  const distance = (radius / Math.tan(fov / 2)) * 1.2 // padding 20%
+  const distance = (radius / Math.tan(fov / 2)) * FOCUS_DISTANCE_MULTIPLIER // comfort multiplier
   return { center, distance }
 }
 
@@ -93,6 +94,7 @@ export const SceneCanvas: React.FC = () => {
   const loaded = useStableModelCache() // ensure models are loaded
 
   const controlsRef = useRef<any>(null)
+  const orbitInterruptRef = useRef(false)
 
   const handleSelect = useCallback((name: string) => {
     if (name === '') {
@@ -123,7 +125,25 @@ export const SceneCanvas: React.FC = () => {
   }, [loaded, setActiveModelName, setCameraTarget])
 
   return (
-    <Canvas
+    <>
+      {activeModelName && (
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
+          <button
+            onClick={() => handleSelect('')}
+            style={{
+              background: 'rgba(0,0,0,0.6)',
+              color: '#fff',
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.2)',
+              cursor: 'pointer'
+            }}
+          >
+            Quitter
+          </button>
+        </div>
+      )}
+      <Canvas
       camera={{ position: [0, 0, 12], fov: 75 }}
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false, depth: true }}
@@ -134,8 +154,8 @@ export const SceneCanvas: React.FC = () => {
     >
       <SceneLights />
       <Suspense fallback={null}>
-        <DualPassRenderer />
-        <FluidCameraRig enabled />
+          <DualPassRenderer />
+          <FluidCameraRig enabled interruptRef={orbitInterruptRef} />
         <ModelCollection activeModelName={activeModelName} onSelect={handleSelect} />
         <Environment preset="night" environmentIntensity={0.4} />
       </Suspense>
@@ -152,7 +172,10 @@ export const SceneCanvas: React.FC = () => {
         zoomSpeed={0.8}
         minDistance={1}
         maxDistance={50}
+          // Marquer l'interaction utilisateur pour interrompre le lerp auto
+          onStart={() => { orbitInterruptRef.current = true }}
       />
-    </Canvas>
+      </Canvas>
+    </>
   )
 }
