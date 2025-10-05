@@ -43,7 +43,7 @@ export const models: ModelConfig[] = [
   {
     name: "Faded Flower",
     path: '/3D/faded_flower-draco.glb',
-    position: [-4, 2, 0], // Plan moyen
+    position: [-3, 2, 0], // Plan moyen
     backgroundPosition: { x: 25, y: 20 },
     rotation: [0, 0, 0],
     scale: 0.6,
@@ -56,7 +56,7 @@ export const models: ModelConfig[] = [
     position: [0, 1, 0], // Plan moyen
     backgroundPosition: { x: 50, y: 30 },
     rotation: [0, 0, 0],
-    scale: 0.5,
+    scale: 0.8,
     color: "#dc2626",
     layer: 'midground',
   },

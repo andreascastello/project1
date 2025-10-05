@@ -9,6 +9,7 @@ import { ModelCollection } from '../components/ModelCollection'
 import { FluidCameraRig } from './FluidCameraRig'
 import { useStableModelCache } from '../hooks/useStableModelCache'
 import { models } from '../models/models.config'
+import { getRenderedObject } from '../state/RenderedObjectRegistry'
 
 const FOV_DEG = 75
 const FOCUS_DISTANCE_MULTIPLIER = 3
@@ -108,11 +109,13 @@ export const SceneCanvas: React.FC = () => {
       return
     }
 
-    const entry = loaded[name]
-    if (!entry) return
+    // Préférer l'objet réellement rendu (group + Center + transforms)
+    const rendered = getRenderedObject(name)
+    const targetObject = rendered ?? loaded[name]?.gltf.scene
+    if (!targetObject) return
 
-    // compute true center & distance from the actual loaded glTF scene
-    const { center, distance } = computeFocusFromObject(entry.gltf.scene)
+    // compute true center & distance from the actually rendered object
+    const { center, distance } = computeFocusFromObject(targetObject)
 
     const pos: [number, number, number] = [center.x, center.y, center.z + distance]
     setActiveModelName(name)

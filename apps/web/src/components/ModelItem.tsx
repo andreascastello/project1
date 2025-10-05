@@ -2,6 +2,7 @@ import React, { useRef, useCallback, useMemo, useEffect } from 'react'
 import { Center } from '@react-three/drei'
 import * as THREE from 'three'
 import type { LoadedModel } from '../hooks/useStableModelCache'
+import { registerRenderedObject, unregisterRenderedObject } from '../state/RenderedObjectRegistry'
 
 interface ModelItemProps {
   loadedModel: LoadedModel
@@ -13,6 +14,16 @@ interface ModelItemProps {
 export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onSelect, activeModelName }) => {
   const groupRef = useRef<THREE.Group>(null)
   // La rotation par drag est gérée par OrbitControls côté scène
+
+  // Enregistrer le groupe réellement rendu pour le calcul de focus/centre
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    registerRenderedObject(loadedModel.name, group)
+    return () => {
+      unregisterRenderedObject(loadedModel.name, group)
+    }
+  }, [loadedModel.name])
 
   useEffect(() => {
     const group = groupRef.current
