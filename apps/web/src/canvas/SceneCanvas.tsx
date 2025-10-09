@@ -12,7 +12,7 @@ import { models } from '../models/models.config'
 import { getRenderedObject } from '../state/RenderedObjectRegistry'
 
 const FOV_DEG = 75
-const FOCUS_DISTANCE_MULTIPLIER = 3
+const FOCUS_DISTANCE_MULTIPLIER = 2.3
 function computeFocusFromObject(root: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(root)
   const center = box.getCenter(new THREE.Vector3())
@@ -23,13 +23,48 @@ function computeFocusFromObject(root: THREE.Object3D) {
   return { center, distance }
 }
 
+// ndcX/ndcY dans [-1..1] : (-0.5,-0.5) = centre du quadrant bas-gauche
+function computeFramedCameraPosition(
+  camera: THREE.PerspectiveCamera | null,
+  center: THREE.Vector3,
+  distance: number,
+  ndcX: number, // -1..1 (gauche..droite)
+  ndcY: number  // -1..1 (bas..haut)
+) {
+  if (!camera) {
+    // Fallback simple: placer la caméra face à l'objet sans décalage
+    return new THREE.Vector3(center.x, center.y, center.z + distance)
+  }
+
+  const aspect = camera.aspect || (window.innerWidth / window.innerHeight)
+  const fov = THREE.MathUtils.degToRad(camera.fov)
+  const visibleHeight = 2 * Math.tan(fov / 2) * distance
+  const visibleWidth = visibleHeight * aspect
+
+  // Décalage en unités monde à cette distance.
+  // Signe choisi pour que ndc négatif => on pousse la caméra à droite/haut
+  // -> l'objet apparait à gauche/bas à l'écran.
+  const offsetX = -ndcX * (visibleWidth / 2)   // +X caméra = droite écran
+  const offsetY = -ndcY * (visibleHeight / 2)  // +Y caméra = haut écran
+
+  // On part d'une position "en face" (axe Z), puis on décale en X/Y monde (caméra sans roll).
+  const pos = new THREE.Vector3(center.x, center.y, center.z + distance)
+  pos.x += offsetX
+  pos.y += offsetY
+  return pos
+}
+
 // Dual pass renderer: layer 1 (inactive) in grayscale, layer 2 (active) in color overlaid.
 // When a model is active, we freeze the camera transform for pass 1 so the background appears static
 // while OrbitControls move the live camera for the active object.
 const DualPassRenderer: React.FC = () => {
-  const { gl, camera, scene, raycaster } = useThree()
+  const { gl, camera, scene, raycaster, size } = useThree()
   const { activeModelName } = useActiveModel()
   const composerRef = React.useRef<any>(null)
+
+  // Choix du cadrage NDC (-1..1). (-0.5, -0.5) = centre du quadrant bas-gauche
+  const NDC_X = -0.3
+  const NDC_Y = -0.3
 
   // Freeze camera transform when entering an active focus
   const frozenPos = React.useRef(new THREE.Vector3())
@@ -74,7 +109,24 @@ const DualPassRenderer: React.FC = () => {
     camera.layers.set(2)
     gl.autoClear = false
     gl.clearDepth()
+
+    // Déplacer le centre de projection uniquement pour la pass couleur
+    if (activeModelName && (camera as any).isPerspectiveCamera) {
+      const fullW = size.width
+      const fullH = size.height
+      const offsetX = Math.round(-NDC_X * fullW * 0.5)
+      const offsetY = Math.round(NDC_Y * fullH * 0.5)
+      ;(camera as THREE.PerspectiveCamera).setViewOffset(fullW, fullH, offsetX, offsetY, fullW, fullH)
+      camera.updateProjectionMatrix()
+    }
+
     gl.render(scene, camera)
+
+    // Réinitialiser l'offset immédiatement après
+    if ((camera as any).isPerspectiveCamera) {
+      (camera as THREE.PerspectiveCamera).clearViewOffset()
+      camera.updateProjectionMatrix()
+    }
 
     // Restore layers so raycaster sees both
     camera.layers.enable(1)
@@ -115,12 +167,13 @@ export const SceneCanvas: React.FC = () => {
     if (!targetObject) return
 
     // compute true center & distance from the actually rendered object
-    const { center, distance } = computeFocusFromObject(targetObject)
+// compute true center & distance
+const { center, distance } = computeFocusFromObject(targetObject)
 
+    // Position "en face"; la projection décentrée sera appliquée en pass 2 via setViewOffset
     const pos: [number, number, number] = [center.x, center.y, center.z + distance]
     setActiveModelName(name)
     setCameraTarget({ pos, look: [center.x, center.y, center.z] })
-
     if (controlsRef.current) {
       controlsRef.current.target.copy(center)
       controlsRef.current.update()
@@ -153,7 +206,11 @@ export const SceneCanvas: React.FC = () => {
       shadows={false}
       frameloop="always"
       style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 5 }}
-      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+      onCreated={({ gl }) => {
+        gl.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        gl.setSize(window.innerWidth, window.innerHeight)
+        gl.setClearColor(0x000000, 0)
+      }}
     >
       <SceneLights />
       <Suspense fallback={null}>

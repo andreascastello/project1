@@ -2,83 +2,68 @@ export interface ModelConfig {
   name: string
   path: string
   position: [number, number, number]
-  backgroundPosition: { x: number; y: number }
   rotation: [number, number, number]
   scale: number
-  color: string
   layer?: 'background' | 'midground' | 'foreground' // Pour le z-positioning
 }
+const degToRad = (deg: number) => deg * Math.PI / 180;
 
 export const models: ModelConfig[] = [
   {
     name: "Knight",
     path: '/3D/Knight-draco.glb',
-    position: [0, -1, 2], // Premier plan
-    backgroundPosition: { x: 50, y: 65 },
+    position: [-6, -3, 2], // Premier plan
     rotation: [0, Math.PI, 0],
-    scale: 1.0,
-    color: "#8b5cf6",
+    scale: 3.0,
     layer: 'foreground',
   },
   {
     name: "Archive",
     path: '/3D/archive-draco.glb',
-    position: [-6, 0, -2], // Arrière plan
-    backgroundPosition: { x: 10, y: 45 },
-    rotation: [0, 0, 0],
-    scale: 0.8,
-    color: "#ef4444",
-    layer: 'background',
+    position: [6.3, 5, 2], // Arrière plan
+    rotation: [0, degToRad(-30), 0],
+    scale: 1,
+    layer: 'midground',
   },
   {
     name: "Childhood",
     path: '/3D/childhood-draco.glb',
-    position: [6, 0, -2], // Arrière plan
-    backgroundPosition: { x: 90, y: 45 },
-    rotation: [0, 0, 0],
+    position: [-13.3, -8.3, 2], // Arrière plan
+    rotation: [0, degToRad(70), 0],
     scale: 0.8,
-    color: "#10b981",
-    layer: 'background',
+    layer: 'foreground',
   },
   {
     name: "Faded Flower",
     path: '/3D/faded_flower-draco.glb',
-    position: [-3, 2, 0], // Plan moyen
-    backgroundPosition: { x: 25, y: 20 },
+    position: [3, -7, 1], // Plan moyen
     rotation: [0, 0, 0],
     scale: 0.6,
-    color: "#f59e0b",
     layer: 'midground',
   },
   {
     name: "Haunted House",
     path: '/3D/haunted_house-draco.glb',
-    position: [0, 1, 0], // Plan moyen
-    backgroundPosition: { x: 50, y: 30 },
-    rotation: [0, 0, 0],
-    scale: 0.8,
-    color: "#dc2626",
-    layer: 'midground',
+    position: [1.5, -1, -1], // Plan moyen
+    rotation: [0, degToRad(-21), 0],
+    scale: 4.6,
+    layer: 'background',
   },
   {
     name: "Closed Chapter",
     path: '/3D/closed_chapter-draco.glb',
-    position: [-4, -2, -2], // Arrière plan
-    backgroundPosition: { x: 20, y: 80 },
-    rotation: [0, 0, 0],
-    scale: 0.7,
-    color: "#7c3aed",
-    layer: 'background',
+    position: [7.2, -4, 2], // Arrière plan
+    rotation: [0, degToRad(20), 0],
+    scale: 1,
+    layer: 'foreground',
   },
   {
     name: "Dragon",
     path: '/3D/dragon-draco.glb',
-    position: [4, 2, 2], // Premier plan
-    backgroundPosition: { x: 75, y: 20 },
-    rotation: [0, 0, 0],
-    scale: 0.8,
-    color: "#059669",
-    layer: 'foreground',
+    position: [0, 7, -2], // Premier plan
+    rotation: [degToRad(90), degToRad(130), 0],
+    scale: 3,
+    layer: 'background',
   },
 ]
 
