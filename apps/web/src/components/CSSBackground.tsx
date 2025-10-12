@@ -75,7 +75,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
 
       {/* Overlay sombre pour améliorer le contraste avec les 3D */}
       <div 
-        className="fixed inset-0 bg-black/30 transition-opacity duration-500"
+        className="fixed inset-0 bg-black transition-opacity duration-500"
         style={{ 
           zIndex: 4,
           opacity: activeModelName ? 0.4 : 0.2
