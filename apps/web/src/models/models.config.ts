@@ -5,6 +5,7 @@ export interface ModelConfig {
   rotation: [number, number, number]
   scale: number
   layer?: 'background' | 'midground' | 'foreground' // Pour le z-positioning
+  exposure?: number
 }
 const degToRad = (deg: number) => deg * Math.PI / 180;
 
@@ -16,6 +17,7 @@ export const models: ModelConfig[] = [
     rotation: [0, Math.PI, 0],
     scale: 3.0,
     layer: 'foreground',
+    exposure: 0.8,
   },
   {
     name: "Archive",
@@ -24,6 +26,7 @@ export const models: ModelConfig[] = [
     rotation: [0, degToRad(-30), 0],
     scale: 1,
     layer: 'midground',
+    exposure: 1,
   },
   {
     name: "Childhood",
@@ -32,6 +35,7 @@ export const models: ModelConfig[] = [
     rotation: [0, degToRad(70), 0],
     scale: 0.8,
     layer: 'foreground',
+    exposure: 0.4,
   },
   {
     name: "Faded Flower",
@@ -40,6 +44,7 @@ export const models: ModelConfig[] = [
     rotation: [0, 0, 0],
     scale: 0.6,
     layer: 'midground',
+    exposure: 50,
   },
   {
     name: "Haunted House",
@@ -48,6 +53,7 @@ export const models: ModelConfig[] = [
     rotation: [0, degToRad(-21), 0],
     scale: 4.6,
     layer: 'background',
+    exposure: 0.4,
   },
   {
     name: "Closed Chapter",
@@ -56,6 +62,7 @@ export const models: ModelConfig[] = [
     rotation: [0, degToRad(20), 0],
     scale: 1,
     layer: 'foreground',
+    exposure: 2,
   },
   {
     name: "Dragon",
@@ -64,6 +71,7 @@ export const models: ModelConfig[] = [
     rotation: [degToRad(90), degToRad(130), 0],
     scale: 3,
     layer: 'background',
+    exposure: 2,
   },
 ]
 

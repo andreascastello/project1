@@ -41,6 +41,32 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     return loadedModel.gltf.scene.clone()
   }, [loadedModel.gltf.scene])
 
+  // Ajuster l'exposition en multipliant la couleur de base par le scalar
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    const exposure = loadedModel.exposure ?? 1
+
+    const applyExposure = (material: any) => {
+      if (!material || !material.color) return
+      // Mémoriser la couleur de base pour éviter l'accumulation aux re-renders
+      if (!material.userData.__baseColor) {
+        material.userData.__baseColor = material.color.clone()
+      }
+      material.color.copy(material.userData.__baseColor).multiplyScalar(exposure)
+      material.needsUpdate = true
+    }
+
+    group.traverse((child: any) => {
+      if (!child.isMesh || !child.material) return
+      if (Array.isArray(child.material)) {
+        child.material.forEach((mat: any) => applyExposure(mat))
+      } else {
+        applyExposure(child.material)
+      }
+    })
+  }, [loadedModel.name, loadedModel.exposure])
+
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
     // On peut cliquer pour sélectionner si aucun objet n'est actif
