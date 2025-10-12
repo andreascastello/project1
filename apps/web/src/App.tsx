@@ -4,6 +4,7 @@ import { ActiveModelProvider, useActiveModel } from './state/ActiveModelContext'
 import { LoadingScreen } from './components/LoadingScreen'
 import { SceneCanvas } from './canvas/SceneCanvas'
 import { CSSBackground } from './components/CSSBackground'
+import { AlbumMarquee } from './ui/AlbumMarquee'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './App.css'
 
@@ -29,6 +30,7 @@ const AppContent: React.FC = () => {
     <div className="w-full h-screen relative overflow-hidden bg-black">
       {/* Background CSS 3 layers - ultra optimisé */}
       <CSSBackground />
+      <AlbumMarquee />
       
       {/* Canvas 3D unique avec filtre N&B */}
       <ErrorBoundary>
