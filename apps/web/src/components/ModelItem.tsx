@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useMemo, useEffect } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { Center } from '@react-three/drei'
 import * as THREE from 'three'
 import type { LoadedModel } from '../hooks/useStableModelCache'
@@ -13,6 +14,7 @@ interface ModelItemProps {
 
 export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onSelect, activeModelName }) => {
   const groupRef = useRef<THREE.Group>(null)
+  const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
   // La rotation par drag est gérée par OrbitControls côté scène
 
   // Enregistrer le groupe réellement rendu pour le calcul de focus/centre
@@ -40,6 +42,52 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const clonedScene = useMemo(() => {
     return loadedModel.gltf.scene.clone()
   }, [loadedModel.gltf.scene])
+
+  // Indexer et mémoriser les matériaux pour gérer l'opacité sans retraverser en continu
+  useEffect(() => {
+    const group = groupRef.current
+    materialsRef.current = []
+    if (!group) return
+    group.traverse((child: any) => {
+      if (!child.isMesh || !child.material) return
+      const pushMaterial = (mesh: any, mat: any) => {
+        if (!mat.userData.__baseOpacity) {
+          mat.userData.__baseOpacity = typeof mat.opacity === 'number' ? mat.opacity : 1
+        }
+        mat.transparent = true
+        materialsRef.current.push({ mesh, material: mat })
+      }
+      if (Array.isArray(child.material)) {
+        child.material.forEach((mat: any) => pushMaterial(child, mat))
+      } else {
+        pushMaterial(child, child.material)
+      }
+    })
+  }, [clonedScene])
+
+  // Lerp d'opacité pour faire disparaître les layers background/midground lorsque un modèle est actif
+  useFrame((_, dt) => {
+    const shouldFade = !!activeModelName && !isActive && (loadedModel.layer === 'background' || loadedModel.layer === 'midground' || loadedModel.layer === 'foreground')
+    const threshold = 0.02
+    // 500ms approx smoothing
+    const k = 1 - Math.pow(0.001, dt / 0.5)
+    for (const { mesh, material } of materialsRef.current) {
+      const base = material.userData.__baseOpacity ?? 1
+      const target = shouldFade ? 0 : base
+      const current = typeof material.opacity === 'number' ? material.opacity : 1
+      const next = THREE.MathUtils.lerp(current, target, k)
+      if (Math.abs(next - current) > 1e-4) {
+        material.opacity = next
+        material.needsUpdate = true
+      }
+      const below = next < threshold
+      // Eviter le sur-rendu et améliorer les perfs quand invisible
+      material.depthWrite = !below
+      if (!isActive) {
+        mesh.visible = !below
+      }
+    }
+  })
 
   // Ajuster l'exposition en multipliant la couleur de base par le scalar
   useEffect(() => {

@@ -13,52 +13,45 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
   midgroundImage,
   foregroundImage
 }) => {
-  const { activeModelName } = useActiveModel()
+  const { activeModelName, bgTransformOrigin } = useActiveModel()
 
-  // Classes CSS pour les différents zooms selon les layers
-  const getLayerClass = (layer: 'background' | 'midground' | 'foreground') => {
-    if (!activeModelName) return 'scale-100'
-    
-    // Zoom unifié quand un modèle est sélectionné
-    switch (layer) {
-      case 'background':
-        return 'scale-120' // Zoom subtil 1.2x
-      case 'midground':
-        return 'scale-140' // Zoom moyen 1.4x
-      case 'foreground':
-        return 'scale-180' // Zoom fort 1.8x
-      default:
-        return 'scale-100'
-    }
-  }
+  // Calcul utilitaire
+  const origin = bgTransformOrigin ? `${bgTransformOrigin.x}% ${bgTransformOrigin.y}%` : '50% 50%'
+  const bgScale = activeModelName ? 2 : 1
+  const bgBlur = activeModelName ? '20px' : '0px'
+  const midBlur = activeModelName ? '12px' : '0px'
+  const foreBlur = activeModelName ? '6px' : '0px'
 
   return (
     <>
       {/* Layer 1 - Background (le plus loin) */}
       <div
-        className={`fixed inset-0 transition-transform duration-500 ease-out ${getLayerClass('background')}`}
+        className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
         style={{
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           zIndex: 1,
-          transformOrigin: 'center center'
+          transformOrigin: origin,
+          transform: `scale(${bgScale})`,
+          filter: `blur(${bgBlur})`
         }}
       />
 
       {/* Layer 2 - Midground (plan moyen) */}
       {midgroundImage && (
         <div
-          className={`fixed inset-0 transition-transform duration-500 ease-out ${getLayerClass('midground')}`}
+          className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
           style={{
             backgroundImage: `url(${midgroundImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             zIndex: 2,
-            transformOrigin: 'center center',
-            opacity: 0.8 // Légère transparence pour l'effet de profondeur
+            transformOrigin: origin,
+            filter: `blur(${midBlur})`,
+            opacity: 0.8
           }}
         />
       )}
@@ -66,15 +59,16 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
       {/* Layer 3 - Foreground (premier plan) */}
       {foregroundImage && (
         <div
-          className={`fixed inset-0 transition-transform duration-500 ease-out ${getLayerClass('foreground')}`}
+          className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
           style={{
             backgroundImage: `url(${foregroundImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             zIndex: 3,
-            transformOrigin: 'center center',
-            opacity: 0.6 // Plus transparente pour laisser voir les layers derrière
+            transformOrigin: origin,
+            filter: `blur(${foreBlur})`,
+            opacity: 0.6
           }}
         />
       )}
@@ -84,7 +78,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
         className="fixed inset-0 bg-black/30 transition-opacity duration-500"
         style={{ 
           zIndex: 4,
-          opacity: activeModelName ? 0.4 : 0.2 // Plus sombre quand focus
+          opacity: activeModelName ? 0.4 : 0.2
         }}
       />
     </>

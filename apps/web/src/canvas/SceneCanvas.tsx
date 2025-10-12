@@ -10,6 +10,7 @@ import { FluidCameraRig } from './FluidCameraRig'
 import { useStableModelCache } from '../hooks/useStableModelCache'
 import { models } from '../models/models.config'
 import { getRenderedObject } from '../state/RenderedObjectRegistry'
+import { worldToPercent } from './worldToPercent'
 
 const FOV_DEG = 75
 const FOCUS_DISTANCE_MULTIPLIER = 2.3
@@ -143,16 +144,19 @@ const DualPassRenderer: React.FC = () => {
 }
 
 export const SceneCanvas: React.FC = () => {
-  const { activeModelName, setActiveModelName, setCameraTarget } = useActiveModel()
+  const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin } = useActiveModel()
   const loaded = useStableModelCache() // ensure models are loaded
 
   const controlsRef = useRef<any>(null)
   const orbitInterruptRef = useRef(false)
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
+  const sizeRef = useRef<{ width: number, height: number } | null>(null)
 
   const handleSelect = useCallback((name: string) => {
     if (name === '') {
       setActiveModelName(null)
       setCameraTarget({ pos: [0, 0, 12], look: [0, 0, 0] })
+      setBgTransformOrigin(null)
       // reset orbit target to scene origin
       if (controlsRef.current) {
         controlsRef.current.target.set(0, 0, 0)
@@ -169,6 +173,16 @@ export const SceneCanvas: React.FC = () => {
     // compute true center & distance from the actually rendered object
 // compute true center & distance
 const { center, distance } = computeFocusFromObject(targetObject)
+
+    // Avant de bouger la caméra, mesurer la position écran du centre
+    try {
+      const cam = cameraRef.current
+      const sz = sizeRef.current
+      if (cam && sz) {
+        const percent = worldToPercent(center, cam, sz)
+        setBgTransformOrigin({ x: percent.x, y: percent.y })
+      }
+    } catch {}
 
     // Position "en face"; la projection décentrée sera appliquée en pass 2 via setViewOffset
     const pos: [number, number, number] = [center.x, center.y, center.z + distance]
@@ -206,10 +220,13 @@ const { center, distance } = computeFocusFromObject(targetObject)
       shadows={false}
       frameloop="always"
       style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 5 }}
-      onCreated={({ gl }) => {
+      onCreated={(state) => {
+        const { gl, camera, size } = state as any
         gl.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         gl.setSize(window.innerWidth, window.innerHeight)
         gl.setClearColor(0x000000, 0)
+        cameraRef.current = camera as THREE.PerspectiveCamera
+        sizeRef.current = { width: size.width, height: size.height }
       }}
     >
       <SceneLights />

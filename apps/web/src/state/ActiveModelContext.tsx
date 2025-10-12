@@ -10,6 +10,8 @@ interface ActiveModelContextType {
   setActiveModelName: (name: string | null) => void
   cameraTarget: CameraTarget
   setCameraTarget: (target: CameraTarget) => void
+  bgTransformOrigin: { x: number, y: number } | null
+  setBgTransformOrigin: (p: { x: number, y: number } | null) => void
 }
 
 const ActiveModelContext = createContext<ActiveModelContextType | undefined>(undefined)
@@ -20,12 +22,15 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     pos: [0, 0, 12],
     look: [0, 0, 0]
   })
+  const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
 
   const value: ActiveModelContextType = {
     activeModelName,
     setActiveModelName,
     cameraTarget,
     setCameraTarget,
+    bgTransformOrigin,
+    setBgTransformOrigin,
   }
 
   return (
