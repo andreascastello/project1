@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import femtogoImage from '../assets/femtogo.png'
 
@@ -15,8 +15,34 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
 }) => {
   const { activeModelName, bgTransformOrigin } = useActiveModel()
 
+  // Origine animée pour simuler un déplacement de caméra lors du changement de modèle
+  const [animatedOrigin, setAnimatedOrigin] = useState<{ x: number, y: number }>({ x: 50, y: 50 })
+  const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const target = bgTransformOrigin ?? { x: 50, y: 50 }
+    const start = { x: animatedOrigin.x, y: animatedOrigin.y }
+    const duration = 500
+    const startTime = performance.now()
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startTime) / duration)
+      const e = easeOutCubic(t)
+      const nx = start.x + (target.x - start.x) * e
+      const ny = start.y + (target.y - start.y) * e
+      setAnimatedOrigin({ x: nx, y: ny })
+      if (t < 1) rafRef.current = requestAnimationFrame(tick)
+    }
+
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [bgTransformOrigin])
+
   // Calcul utilitaire
-  const origin = bgTransformOrigin ? `${bgTransformOrigin.x}% ${bgTransformOrigin.y}%` : '50% 50%'
+  const origin = `${animatedOrigin.x}% ${animatedOrigin.y}%`
   const bgScale = activeModelName ? 2 : 1
   const bgBlur = activeModelName ? '20px' : '0px'
   const midBlur = activeModelName ? '12px' : '0px'
@@ -26,7 +52,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
     <>
       {/* Layer 1 - Background (le plus loin) */}
       <div
-        className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
+        className={`fixed inset-0`}
         style={{
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
@@ -35,14 +61,15 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
           zIndex: 1,
           transformOrigin: origin,
           transform: `scale(${bgScale})`,
-          filter: `blur(${bgBlur})`
+          filter: `blur(${bgBlur})`,
+          transition: 'transform 500ms ease-out, filter 500ms ease-out'
         }}
       />
 
       {/* Layer 2 - Midground (plan moyen) */}
       {midgroundImage && (
         <div
-          className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
+          className={`fixed inset-0`}
           style={{
             backgroundImage: `url(${midgroundImage})`,
             backgroundSize: 'cover',
@@ -51,6 +78,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
             zIndex: 2,
             transformOrigin: origin,
             filter: `blur(${midBlur})`,
+            transition: 'transform 500ms ease-out, filter 500ms ease-out',
             opacity: 0.8
           }}
         />
@@ -59,7 +87,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
       {/* Layer 3 - Foreground (premier plan) */}
       {foregroundImage && (
         <div
-          className={`fixed inset-0 transition-[transform,filter] duration-500 ease-out`}
+          className={`fixed inset-0`}
           style={{
             backgroundImage: `url(${foregroundImage})`,
             backgroundSize: 'cover',
@@ -68,6 +96,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
             zIndex: 3,
             transformOrigin: origin,
             filter: `blur(${foreBlur})`,
+            transition: 'transform 500ms ease-out, filter 500ms ease-out',
             opacity: 0.6
           }}
         />

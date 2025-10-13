@@ -144,7 +144,7 @@ const DualPassRenderer: React.FC = () => {
 }
 
 export const SceneCanvas: React.FC = () => {
-  const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin } = useActiveModel()
+  const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin, setSelectModelByName } = useActiveModel()
   const loaded = useStableModelCache() // ensure models are loaded
 
   const controlsRef = useRef<any>(null)
@@ -179,8 +179,16 @@ const { center, distance } = computeFocusFromObject(targetObject)
       const cam = cameraRef.current
       const sz = sizeRef.current
       if (cam && sz) {
-        const percent = worldToPercent(center, cam, sz)
-        setBgTransformOrigin({ x: percent.x, y: percent.y })
+        const base = worldToPercent(center, cam, sz) // {x,y} en %
+        const NDC_X = -0.3
+        const NDC_Y = -0.3
+        
+        const dxPct = -NDC_X * 50
+        const dyPct = -NDC_Y * 50
+        
+        const x = Math.max(0, Math.min(100, base.x + dxPct))
+        const y = Math.max(0, Math.min(100, base.y + dyPct))
+        setBgTransformOrigin({ x, y })
       }
     } catch {}
 
@@ -193,6 +201,11 @@ const { center, distance } = computeFocusFromObject(targetObject)
       controlsRef.current.update()
     }
   }, [loaded, setActiveModelName, setCameraTarget])
+
+  // Expose handleSelect to context for external navigation controls
+  React.useEffect(() => {
+    setSelectModelByName(handleSelect)
+  }, [handleSelect, setSelectModelByName])
 
   return (
     <>

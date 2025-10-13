@@ -83,9 +83,8 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       const below = next < threshold
       // Eviter le sur-rendu et améliorer les perfs quand invisible
       material.depthWrite = !below
-      if (!isActive) {
-        mesh.visible = !below
-      }
+      // IMPORTANT: si ce modèle devient actif, le rendre visible immédiatement
+      mesh.visible = isActive ? true : !below
     }
   })
 

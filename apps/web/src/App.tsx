@@ -5,6 +5,7 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { SceneCanvas } from './canvas/SceneCanvas'
 import { CSSBackground } from './components/CSSBackground'
 import { AlbumMarquee } from './ui/AlbumMarquee'
+import { ModelNavigator } from './ui/ModelNavigator'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './App.css'
 
@@ -31,6 +32,7 @@ const AppContent: React.FC = () => {
       {/* Background CSS 3 layers - ultra optimisé */}
       <CSSBackground />
       <AlbumMarquee />
+      <ModelNavigator />
       
       {/* Canvas 3D unique avec filtre N&B */}
       <ErrorBoundary>
