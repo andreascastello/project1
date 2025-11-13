@@ -88,11 +88,12 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     }
   })
 
-  // Ajuster l'exposition en multipliant la couleur de base par le scalar
+  // Ajuster l'exposition en multipliant la couleur de base par le scalar.
+  // Si le modèle est actif, on revient à l'exposition "normale" (1.0).
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
-    const exposure = loadedModel.exposure ?? 1
+    const exposure = isActive ? 1 : (loadedModel.exposure ?? 1)
 
     const applyExposure = (material: any) => {
       if (!material || !material.color) return
@@ -112,7 +113,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
         applyExposure(child.material)
       }
     })
-  }, [loadedModel.name, loadedModel.exposure])
+  }, [loadedModel.name, loadedModel.exposure, isActive])
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
@@ -128,7 +129,8 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
 
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation()
-    const canInteract = !activeModelName || activeModelName === loadedModel.name
+    // Quand un modèle est actif, on ne rend rien "cliquable"
+    const canInteract = !activeModelName
     if (!canInteract) return
     document.body.style.cursor = 'pointer'
   }, [activeModelName, loadedModel.name])

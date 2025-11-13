@@ -40,14 +40,7 @@ const AppContent: React.FC = () => {
         <SceneCanvas />
       </ErrorBoundary>
       
-      {/* UI overlay optimisé */}
-      <div className="absolute top-8 left-8 text-white z-10 pointer-events-none" style={{ zIndex: 10 }}>
-        <h1 className="text-3xl font-bold mb-2 drop-shadow-lg">FEMTOGO - Collection 3D</h1>
-        <p className="text-lg opacity-90 drop-shadow-md">
-          {activeModelName ? 'Mode 3D actif - Utilisez la souris pour explorer' : 'Cliquez sur un élément pour l\'explorer'}
-        </p>
-        {activeModelName && <p className="text-sm opacity-75 mt-1">Modèle actif : {activeModelName}</p>}
-      </div>
+      {/* UI overlay optimisé - texte retiré */}
 
       {/* Overlay Spotify lié au modèle actif (flottant à droite) */}
       <SpotifyOverlay />

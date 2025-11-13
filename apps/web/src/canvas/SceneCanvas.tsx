@@ -253,7 +253,7 @@ const { center, distance } = computeFocusFromObject(targetObject)
         ref={controlsRef}
         enabled={!!activeModelName}
         enableRotate={!!activeModelName}
-        enableZoom={!!activeModelName}
+        enableZoom={false}
         enablePan={false}
         makeDefault
         enableDamping
