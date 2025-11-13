@@ -7,6 +7,7 @@ import { CSSBackground } from './components/CSSBackground'
 import { AlbumMarquee } from './ui/AlbumMarquee'
 import { ModelNavigator } from './ui/ModelNavigator'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { SpotifyOverlay } from './ui/SpotifyOverlay'
 import './App.css'
 
 // Composant principal de l'application avec cache
@@ -47,6 +48,9 @@ const AppContent: React.FC = () => {
         </p>
         {activeModelName && <p className="text-sm opacity-75 mt-1">Modèle actif : {activeModelName}</p>}
       </div>
+
+      {/* Overlay Spotify lié au modèle actif (flottant à droite) */}
+      <SpotifyOverlay />
     </div>
   )
 }

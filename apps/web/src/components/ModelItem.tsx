@@ -153,7 +153,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       onPointerUp={undefined}
       position={loadedModel.position}
       rotation={loadedModel.rotation}
-      scale={isActive ? loadedModel.scale * 1.3 : loadedModel.scale}
+      scale={isActive ? loadedModel.scale * (loadedModel.focusScaleMultiplier ?? 1.3) : loadedModel.scale}
     >
       <Center>
         <primitive object={clonedScene} />
