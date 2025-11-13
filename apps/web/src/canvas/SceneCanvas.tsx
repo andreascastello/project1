@@ -144,7 +144,7 @@ const DualPassRenderer: React.FC = () => {
 }
 
 export const SceneCanvas: React.FC = () => {
-  const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin, setSelectModelByName } = useActiveModel()
+  const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin, setSelectModelByName, addDiscovered } = useActiveModel()
   const loaded = useStableModelCache() // ensure models are loaded
 
   const controlsRef = useRef<any>(null)
@@ -194,13 +194,14 @@ const { center, distance } = computeFocusFromObject(targetObject)
 
     // Position "en face"; la projection décentrée sera appliquée en pass 2 via setViewOffset
     const pos: [number, number, number] = [center.x, center.y, center.z + distance]
+    addDiscovered(name)
     setActiveModelName(name)
     setCameraTarget({ pos, look: [center.x, center.y, center.z] })
     if (controlsRef.current) {
       controlsRef.current.target.copy(center)
       controlsRef.current.update()
     }
-  }, [loaded, setActiveModelName, setCameraTarget])
+  }, [loaded, setActiveModelName, setCameraTarget, addDiscovered])
 
   // Expose handleSelect to context for external navigation controls
   React.useEffect(() => {

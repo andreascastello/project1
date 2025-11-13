@@ -10,6 +10,8 @@ interface ActiveModelContextType {
   setActiveModelName: (name: string | null) => void
   cameraTarget: CameraTarget
   setCameraTarget: (target: CameraTarget) => void
+  discoveredNames: string[]
+  addDiscovered: (name: string) => void
   bgTransformOrigin: { x: number, y: number } | null
   setBgTransformOrigin: (p: { x: number, y: number } | null) => void
   selectModelByName: (name: string) => void
@@ -24,6 +26,7 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     pos: [0, 0, 12],
     look: [0, 0, 0]
   })
+  const [discoveredNames, setDiscoveredNames] = useState<string[]>([])
   const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
   const selectRef = React.useRef<(name: string) => void>(() => {})
   const selectModelByName = useCallback((name: string) => {
@@ -32,12 +35,17 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   const setSelectModelByName = useCallback((fn: (name: string) => void) => {
     selectRef.current = fn
   }, [])
+  const addDiscovered = useCallback((name: string) => {
+    setDiscoveredNames((prev) => (prev.includes(name) ? prev : [...prev, name]))
+  }, [])
 
   const value: ActiveModelContextType = {
     activeModelName,
     setActiveModelName,
     cameraTarget,
     setCameraTarget,
+    discoveredNames,
+    addDiscovered,
     bgTransformOrigin,
     setBgTransformOrigin,
     selectModelByName,

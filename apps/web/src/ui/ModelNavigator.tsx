@@ -3,17 +3,22 @@ import { useActiveModel } from '../state/ActiveModelContext'
 import { models } from '../models/models.config'
 
 export const ModelNavigator: React.FC = () => {
-  const { activeModelName, selectModelByName } = useActiveModel()
-  const names = useMemo(() => models.map(m => m.name), [])
+  const { activeModelName, selectModelByName, discoveredNames } = useActiveModel()
+  const allNames = useMemo(() => models.map(m => m.name), [])
+  const names = discoveredNames
   const isActive = !!activeModelName
+  // Pas d'overlay si aucun actif
   if (!isActive) return null
+  const canNavigate = names.length >= 2
 
   const currentIndex = Math.max(0, names.findIndex(n => n === activeModelName))
   const goPrev = () => {
+    if (!canNavigate) return
     const idx = (currentIndex - 1 + names.length) % names.length
     selectModelByName(names[idx])
   }
   const goNext = () => {
+    if (!canNavigate) return
     const idx = (currentIndex + 1) % names.length
     selectModelByName(names[idx])
   }
@@ -30,15 +35,17 @@ export const ModelNavigator: React.FC = () => {
           transform: 'translateY(-50%)',
           background: 'transparent',
           border: 'none',
-          cursor: 'pointer',
+          cursor: canNavigate ? 'pointer' : 'not-allowed',
           color: '#fff',
           zIndex: 10,
           fontSize: 32,
           padding: '8px 10px',
           transition: 'opacity 0.2s',
           pointerEvents: 'auto',
+          opacity: canNavigate ? 1 : 0.35,
         }}
         aria-label="Précédent"
+        disabled={!canNavigate}
       >
         ←
       </button>
@@ -53,20 +60,22 @@ export const ModelNavigator: React.FC = () => {
           transform: 'translateY(-50%)',
           background: 'transparent',
           border: 'none',
-          cursor: 'pointer',
+          cursor: canNavigate ? 'pointer' : 'not-allowed',
           color: '#fff',
           zIndex: 10,
           fontSize: 32,
           padding: '8px 10px',
           transition: 'opacity 0.2s',
           pointerEvents: 'auto',
+          opacity: canNavigate ? 1 : 0.35,
         }}
         aria-label="Suivant"
+        disabled={!canNavigate}
       >
         →
       </button>
 
-      {/* Petits ronds d’indicateur */}
+      {/* Petits ronds d’indicateur (affichés dès le 1er découvert) */}
       <div
         style={{
           position: 'fixed',
@@ -78,16 +87,16 @@ export const ModelNavigator: React.FC = () => {
           pointerEvents: 'none',
         }}
       >
-        {models.map((m) => (
+        {allNames.map((n) => (
           <div
-            key={m.name}
+            key={n}
             style={{
               width: 14,
               height: 14,
               borderRadius: '50%',
               boxSizing: 'border-box',
-              border: '1px solid #fff',
-              background: m.name === activeModelName ? '#fff' : 'transparent',
+              border: discoveredNames.includes(n) ? '1px solid #fff' : '1px dashed rgba(255,255,255,0.3)',
+              background: n === activeModelName ? '#fff' : 'transparent',
               transition: 'background 0.3s',
             }}
           />
