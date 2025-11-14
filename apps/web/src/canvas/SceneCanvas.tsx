@@ -208,6 +208,18 @@ const { center, distance } = computeFocusFromObject(targetObject)
     setSelectModelByName(handleSelect)
   }, [handleSelect, setSelectModelByName])
 
+  // ESC: quitter la vue active et revenir à l'état initial
+  React.useEffect(() => {
+    if (!activeModelName) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleSelect('')
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [activeModelName, handleSelect])
+
   return (
     <>
       {activeModelName && (

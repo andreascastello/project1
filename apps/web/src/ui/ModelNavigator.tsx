@@ -5,22 +5,39 @@ import { models } from '../models/models.config'
 export const ModelNavigator: React.FC = () => {
   const { activeModelName, selectModelByName, discoveredNames } = useActiveModel()
   const allNames = useMemo(() => models.map(m => m.name), [])
-  const names = discoveredNames
+  // Ordre "normal" de navigation (exclure le portail)
+  const orderedNames = useMemo(() => allNames.filter(n => n !== 'Faded Flower'), [allNames])
+  const discoveredSet = useMemo(() => new Set(discoveredNames), [discoveredNames])
   const isActive = !!activeModelName
   // Pas d'overlay si aucun actif
   if (!isActive) return null
-  const canNavigate = names.length >= 2
+  const discoveredCountInOrder = orderedNames.filter(n => discoveredSet.has(n)).length
+  const canNavigate = discoveredCountInOrder >= 2
 
-  const currentIndex = Math.max(0, names.findIndex(n => n === activeModelName))
+  const currentIndex = Math.max(0, orderedNames.findIndex(n => n === activeModelName))
   const goPrev = () => {
     if (!canNavigate) return
-    const idx = (currentIndex - 1 + names.length) % names.length
-    selectModelByName(names[idx])
+    const len = orderedNames.length
+    for (let step = 1; step <= len; step++) {
+      const idx = (currentIndex - step + len) % len
+      const candidate = orderedNames[idx]
+      if (discoveredSet.has(candidate)) {
+        selectModelByName(candidate)
+        break
+      }
+    }
   }
   const goNext = () => {
     if (!canNavigate) return
-    const idx = (currentIndex + 1) % names.length
-    selectModelByName(names[idx])
+    const len = orderedNames.length
+    for (let step = 1; step <= len; step++) {
+      const idx = (currentIndex + step) % len
+      const candidate = orderedNames[idx]
+      if (discoveredSet.has(candidate)) {
+        selectModelByName(candidate)
+        break
+      }
+    }
   }
 
   return (
@@ -87,7 +104,7 @@ export const ModelNavigator: React.FC = () => {
           pointerEvents: 'none',
         }}
       >
-        {allNames.map((n) => (
+        {orderedNames.map((n) => (
           <div
             key={n}
             style={{

@@ -16,6 +16,9 @@ interface ActiveModelContextType {
   setBgTransformOrigin: (p: { x: number, y: number } | null) => void
   selectModelByName: (name: string) => void
   setSelectModelByName: (fn: (name: string) => void) => void
+  transitionQuote: string | null
+  showTransition: (quote: string) => void
+  hideTransition: () => void
 }
 
 const ActiveModelContext = createContext<ActiveModelContextType | undefined>(undefined)
@@ -28,6 +31,7 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   })
   const [discoveredNames, setDiscoveredNames] = useState<string[]>([])
   const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
+  const [transitionQuote, setTransitionQuote] = useState<string | null>(null)
   const selectRef = React.useRef<(name: string) => void>(() => {})
   const selectModelByName = useCallback((name: string) => {
     selectRef.current(name)
@@ -37,6 +41,12 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [])
   const addDiscovered = useCallback((name: string) => {
     setDiscoveredNames((prev) => (prev.includes(name) ? prev : [...prev, name]))
+  }, [])
+  const showTransition = useCallback((quote: string) => {
+    setTransitionQuote(quote)
+  }, [])
+  const hideTransition = useCallback(() => {
+    setTransitionQuote(null)
   }, [])
 
   const value: ActiveModelContextType = {
@@ -50,6 +60,9 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     setBgTransformOrigin,
     selectModelByName,
     setSelectModelByName,
+    transitionQuote,
+    showTransition,
+    hideTransition,
   }
 
   return (
