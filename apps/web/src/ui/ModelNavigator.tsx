@@ -3,14 +3,29 @@ import { useActiveModel } from '../state/ActiveModelContext'
 import { models } from '../models/models.config'
 
 export const ModelNavigator: React.FC = () => {
-  const { activeModelName, selectModelByName, discoveredNames } = useActiveModel()
-  const allNames = useMemo(() => models.map(m => m.name), [])
-  // Ordre "normal" de navigation (exclure le portail)
-  const orderedNames = useMemo(() => allNames.filter(n => n !== 'Faded Flower'), [allNames])
+  const { activeModelName, selectModelByName, discoveredNames, facet, setFacet, showTransition, hideTransition } = useActiveModel()
+  const allModels = useMemo(() => models, [])
+  const allNames = useMemo(() => allModels.map(m => m.name), [allModels])
+  const displayNames = useMemo(() => allNames.filter(n => n !== 'Faded Flower'), [allNames])
+  const nameToFacet = useMemo(() => {
+    const map = new Map<string, 'femtogo' | 'baby'>()
+    for (const m of allModels) map.set(m.name, (m.facet ?? 'femtogo') as 'femtogo' | 'baby')
+    return map
+  }, [allModels])
+
+  // Ordre de navigation selon la facette (exclure le portail)
+  const orderedNames = useMemo(() => {
+    if (facet === 'baby') {
+      return allModels.filter(m => (m.facet ?? 'femtogo') === 'baby').map(m => m.name)
+    }
+    return displayNames
+  }, [facet, allModels, displayNames])
+
   const discoveredSet = useMemo(() => new Set(discoveredNames), [discoveredNames])
+  // Hooks toujours appelés, même si on rend null plus bas
+  const babyNames = useMemo(() => ['Hayabusa', 'Flower (BBH)'], [])
+  const babyFoundAll = babyNames.every(n => discoveredNames.includes(n))
   const isActive = !!activeModelName
-  // Pas d'overlay si aucun actif
-  if (!isActive) return null
   const discoveredCountInOrder = orderedNames.filter(n => discoveredSet.has(n)).length
   const canNavigate = discoveredCountInOrder >= 2
 
@@ -42,83 +57,113 @@ export const ModelNavigator: React.FC = () => {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-      {/* Left arrow */}
-      <button
-        onClick={goPrev}
-        style={{
-          position: 'absolute',
-          left: 30,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          background: 'transparent',
-          border: 'none',
-          cursor: canNavigate ? 'pointer' : 'not-allowed',
-          color: '#fff',
-          zIndex: 10,
-          fontSize: 32,
-          padding: '8px 10px',
-          transition: 'opacity 0.2s',
-          pointerEvents: 'auto',
-          opacity: canNavigate ? 1 : 0.35,
-        }}
-        aria-label="Précédent"
-        disabled={!canNavigate}
-      >
-        ←
-      </button>
-
-      {/* Right arrow */}
-      <button
-        onClick={goNext}
-        style={{
-          position: 'absolute',
-          right: 30,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          background: 'transparent',
-          border: 'none',
-          cursor: canNavigate ? 'pointer' : 'not-allowed',
-          color: '#fff',
-          zIndex: 10,
-          fontSize: 32,
-          padding: '8px 10px',
-          transition: 'opacity 0.2s',
-          pointerEvents: 'auto',
-          opacity: canNavigate ? 1 : 0.35,
-        }}
-        aria-label="Suivant"
-        disabled={!canNavigate}
-      >
-        →
-      </button>
-
-      {/* Petits ronds d’indicateur (affichés dès le 1er découvert) */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 30,
-          left: 30,
-          display: 'flex',
-          gap: 10,
-          zIndex: 10,
-          pointerEvents: 'none',
-        }}
-      >
-        {orderedNames.map((n) => (
-          <div
-            key={n}
+      {isActive && (
+        <>
+          {/* Left arrow */}
+          <button
+            onClick={goPrev}
             style={{
-              width: 14,
-              height: 14,
-              borderRadius: '50%',
-              boxSizing: 'border-box',
-              border: discoveredNames.includes(n) ? '1px solid #fff' : '1px dashed rgba(255,255,255,0.3)',
-              background: n === activeModelName ? '#fff' : 'transparent',
-              transition: 'background 0.3s',
+              position: 'absolute',
+              left: 30,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'transparent',
+              border: 'none',
+              cursor: canNavigate ? 'pointer' : 'not-allowed',
+              color: '#fff',
+              zIndex: 10,
+              fontSize: 32,
+              padding: '8px 10px',
+              transition: 'opacity 0.2s',
+              pointerEvents: 'auto',
+              opacity: canNavigate ? 1 : 0.35,
             }}
-          />
-        ))}
-      </div>
+            aria-label="Précédent"
+            disabled={!canNavigate}
+          >
+            ←
+          </button>
+
+          {/* Right arrow */}
+          <button
+            onClick={goNext}
+            style={{
+              position: 'absolute',
+              right: 30,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'transparent',
+              border: 'none',
+              cursor: canNavigate ? 'pointer' : 'not-allowed',
+              color: '#fff',
+              zIndex: 10,
+              fontSize: 32,
+              padding: '8px 10px',
+              transition: 'opacity 0.2s',
+              pointerEvents: 'auto',
+              opacity: canNavigate ? 1 : 0.35,
+            }}
+            aria-label="Suivant"
+            disabled={!canNavigate}
+          >
+            →
+          </button>
+        </>
+      )}
+
+      {/* Indicateurs visibles uniquement en page détail (quand un modèle est actif) */}
+      {isActive && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            left: 30,
+            display: 'flex',
+            gap: 10,
+            zIndex: 10,
+            pointerEvents: 'none',
+          }}
+        >
+          {displayNames.map((n) => (
+            <div
+              key={n}
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                boxSizing: 'border-box',
+                border: discoveredNames.includes(n) ? '1px solid #fff' : '1px dashed rgba(255,255,255,0.35)',
+                background: n === activeModelName ? '#fff' : 'transparent',
+                transition: 'background 0.3s',
+                // Griser les modèles de l'autre facette
+                opacity: (facet === 'femtogo' && (nameToFacet.get(n) === 'baby')) || (facet === 'baby' && (nameToFacet.get(n) === 'femtogo')) ? 0.25 : 1,
+              }}
+            />
+          ))}
+        </div>
+      )}
+      {/* Bouton retour uniquement sur la page principale (pas en détail) */}
+      {facet === 'baby' && babyFoundAll && !isActive && (
+        <div style={{ position: 'fixed', bottom: 30, right: 30, zIndex: 11, pointerEvents: 'auto' }}>
+          <button
+            onClick={() => {
+              showTransition("C'est juste un autre jour…")
+              window.setTimeout(() => setFacet('femtogo'), 300)
+              window.setTimeout(() => hideTransition(), 1200)
+            }}
+            style={{
+              background: 'rgba(0,0,0,0.6)',
+              color: '#fff',
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.2)',
+              cursor: 'pointer'
+            }}
+          >
+            Back to FEMTOGO
+          </button>
+        </div>
+      )}
     </div>
   )
 }

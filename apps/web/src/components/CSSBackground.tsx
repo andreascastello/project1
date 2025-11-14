@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
-import femtogoImage from '../assets/femtogo.png'
+const defaultBg = '/images/femtogo.png'
+const babyBg = '/images/baby_hayabusa.jpeg'
 
 interface CSSBackgroundProps {
   backgroundImage?: string
@@ -9,11 +10,11 @@ interface CSSBackgroundProps {
 }
 
 export const CSSBackground: React.FC<CSSBackgroundProps> = ({
-  backgroundImage = femtogoImage,
+  backgroundImage = defaultBg,
   midgroundImage,
   foregroundImage
 }) => {
-  const { activeModelName, bgTransformOrigin } = useActiveModel()
+  const { activeModelName, bgTransformOrigin, facet } = useActiveModel()
 
   // Origine animée pour simuler un déplacement de caméra lors du changement de modèle
   const [animatedOrigin, setAnimatedOrigin] = useState<{ x: number, y: number }>({ x: 50, y: 50 })
@@ -43,6 +44,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
 
   // Calcul utilitaire
   const origin = `${animatedOrigin.x}% ${animatedOrigin.y}%`
+  const bgUrl = facet === 'baby' ? babyBg : backgroundImage
   const bgScale = activeModelName ? 2 : 1
   const bgBlur = activeModelName ? '20px' : '0px'
   const midBlur = activeModelName ? '12px' : '0px'
@@ -54,7 +56,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
       <div
         className={`fixed inset-0`}
         style={{
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${bgUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

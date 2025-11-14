@@ -10,6 +10,8 @@ interface ActiveModelContextType {
   setActiveModelName: (name: string | null) => void
   cameraTarget: CameraTarget
   setCameraTarget: (target: CameraTarget) => void
+  facet: 'femtogo' | 'baby'
+  setFacet: (f: 'femtogo' | 'baby') => void
   discoveredNames: string[]
   addDiscovered: (name: string) => void
   bgTransformOrigin: { x: number, y: number } | null
@@ -29,6 +31,7 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     pos: [0, 0, 12],
     look: [0, 0, 0]
   })
+  const [facet, setFacet] = useState<'femtogo' | 'baby'>('femtogo')
   const [discoveredNames, setDiscoveredNames] = useState<string[]>([])
   const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
   const [transitionQuote, setTransitionQuote] = useState<string | null>(null)
@@ -54,6 +57,8 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     setActiveModelName,
     cameraTarget,
     setCameraTarget,
+    facet,
+    setFacet,
     discoveredNames,
     addDiscovered,
     bgTransformOrigin,

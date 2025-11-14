@@ -18,10 +18,16 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const groupRef = useRef<THREE.Group>(null)
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
   // La rotation par drag est gérée par OrbitControls côté scène
-  const { discoveredNames } = useActiveModel()
+  const { discoveredNames, facet } = useActiveModel()
   const PORTAL_NAME = 'Faded Flower'
   const isPortal = loadedModel.name === PORTAL_NAME
-  const otherNames = useMemo(() => models.map(m => m.name).filter(n => n !== PORTAL_NAME), [])
+  // Débloquer le portail uniquement quand TOUTES les 3D FEMTOGO (hors portail) sont découvertes
+  const otherNames = useMemo(
+    () => models
+      .filter(m => (m.facet ?? 'femtogo') === 'femtogo' && m.name !== PORTAL_NAME)
+      .map(m => m.name),
+    []
+  )
   const isPortalUnlocked = isPortal && otherNames.every(n => discoveredNames.includes(n))
 
   // Enregistrer le groupe réellement rendu pour le calcul de focus/centre
@@ -37,13 +43,14 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
-    const targetLayer = (isPortalUnlocked ? 2 : (isActive ? 2 : 1))
+    // En facet "baby": forcer layer 2 (couleur), sinon logique normale
+    const targetLayer = facet === 'baby' ? 2 : (isPortalUnlocked ? 2 : (isActive ? 2 : 1))
     group.traverse((obj: any) => {
       if (obj && obj.layers && typeof obj.layers.set === 'function') {
         obj.layers.set(targetLayer)
       }
     })
-  }, [isActive, isPortalUnlocked])
+  }, [isActive, isPortalUnlocked, facet])
 
   // Mémoïser le clone pour éviter de le recréer à chaque render
   const clonedScene = useMemo(() => {
@@ -122,7 +129,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     })
   }, [loadedModel.name, loadedModel.exposure, isActive])
 
-  const { showTransition, hideTransition } = useActiveModel()
+  const { showTransition, hideTransition, setFacet, setActiveModelName: setActive } = useActiveModel() as any
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
@@ -130,7 +137,12 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     if (isPortal && !isPortalUnlocked) return
     if (isPortal && isPortalUnlocked) {
       showTransition("C'est juste un autre jour…")
-      window.setTimeout(() => hideTransition(), 1600)
+      window.setTimeout(() => {
+        hideTransition()
+        // Basculer sur la facette Baby après la transition
+        setActive(null)
+        setFacet('baby')
+      }, 1200)
       return
     }
     // On peut cliquer pour sélectionner si aucun objet n'est actif

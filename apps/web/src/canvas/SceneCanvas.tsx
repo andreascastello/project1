@@ -60,7 +60,7 @@ function computeFramedCameraPosition(
 // while OrbitControls move the live camera for the active object.
 const DualPassRenderer: React.FC = () => {
   const { gl, camera, scene, raycaster, size } = useThree()
-  const { activeModelName } = useActiveModel()
+  const { activeModelName, facet } = useActiveModel()
   const composerRef = React.useRef<any>(null)
 
   // Choix du cadrage NDC (-1..1). (-0.5, -0.5) = centre du quadrant bas-gauche
@@ -84,6 +84,15 @@ const DualPassRenderer: React.FC = () => {
 
   useFrame(() => {
     gl.setClearColor(0x000000, 0)
+
+    // Mode "baby": rendu simple en couleur sans pass gris
+    if (facet === 'baby') {
+      camera.layers.enable(1)
+      camera.layers.enable(2)
+      gl.autoClear = true
+      gl.render(scene, camera)
+      return
+    }
 
     // Save live camera transform
     const livePos = new THREE.Vector3().copy(camera.position)

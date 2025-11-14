@@ -4,6 +4,7 @@ export interface ModelConfig {
   position: [number, number, number]
   rotation: [number, number, number]
   scale: number
+  facet?: 'femtogo' | 'baby'
   // Multiplicateur appliqué au scale quand le modèle est actif (focus).
   // Par défaut 1.3 si non spécifié.
   focusScaleMultiplier?: number
@@ -19,6 +20,7 @@ const degToRad = (deg: number) => deg * Math.PI / 180;
 export const models: ModelConfig[] = [
   {
     name: "One Man Army",
+    facet: 'femtogo',
     path: '/3D/Knight-draco.glb',
     position: [-6, -3, 2], // Premier plan
     rotation: [0, Math.PI, 0],
@@ -32,6 +34,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "Archives",
+    facet: 'femtogo',
     path: '/3D/archive-draco.glb',
     position: [6.3, 5, 2], // Arrière plan
     rotation: [0, degToRad(-30), 0],
@@ -44,6 +47,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "Franc-Tireur Partisant",
+    facet: 'femtogo',
     path: '/3D/childhood-draco.glb',
     position: [-13.3, -8.3, 2], // Arrière plan
     rotation: [0, degToRad(70), 0],
@@ -56,6 +60,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "Faded Flower",
+    facet: 'femtogo',
     path: '/3D/faded_flower-draco.glb',
     position: [3, -7, 1], // Plan moyen
     rotation: [0, 0, 0],
@@ -67,6 +72,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "Nameless Belligerent",
+    facet: 'femtogo',
     path: '/3D/haunted_house-draco.glb',
     position: [1.5, -1, -1], // Plan moyen
     rotation: [0, degToRad(-21), 0],
@@ -80,6 +86,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "Closed Chapter",
+    facet: 'femtogo',
     path: '/3D/closed_chapter-draco.glb',
     position: [7.2, -4, 2], // Arrière plan
     rotation: [0, degToRad(20), 0],
@@ -92,6 +99,7 @@ export const models: ModelConfig[] = [
   },
   {
     name: "La Bête",
+    facet: 'femtogo',
     path: '/3D/dragon-draco.glb',
     position: [0, 7, -2], // Premier plan
     rotation: [degToRad(90), degToRad(130), 0],
@@ -102,6 +110,33 @@ export const models: ModelConfig[] = [
     albumTitle: 'LA BÊTE',
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/6EvcYoFlmSH1VZaFNyOFlG',
+  },
+  // Baby facet (en couleur)
+  {
+    name: "Deadly Poison Sting",
+    facet: 'baby',
+    path: '/3D/Hayabusa-draco.glb',
+    position: [-6, -3, 2],
+    rotation: [0, Math.PI, 0],
+    scale: 3,
+    layer: 'foreground',
+    exposure: 1,
+    albumTitle: 'DEADLY POISON STING',
+    marqueeSpeedSec: 30,
+    spotifyEmbedUrl: 'https://open.spotify.com/embed/album/4ZBG4lOW57ekJjHjXGxxMU',
+  },
+  {
+    name: "Faded Flower Story",
+    facet: 'baby',
+    path: '/3D/flower-draco.glb',
+    position: [3, -7, 1],
+    rotation: [0, 0, 0],
+    scale: 0.6,
+    layer: 'midground',
+    exposure: 1.2,
+    albumTitle: 'FADED FLOWER STORY',
+    marqueeSpeedSec: 30,
+    spotifyEmbedUrl: 'https://open.spotify.com/embed/album/7sd67KZ95ZyI3haXg0OiqB',
   },
 ]
 
