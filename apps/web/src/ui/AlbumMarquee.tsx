@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useLayoutEffect, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import { models } from '../models/models.config'
 
-const FONT_STACK = `'Tusker Grotesk 5800 Super', 'Tusker Grotesk', 'Impact', 'Arial Black', system-ui, sans-serif`
+const FONT_STACK = `'SerpentCresh', 'Tusker Grotesk 5800 Super', 'Tusker Grotesk', 'Impact', 'Arial Black', system-ui, sans-serif`
 
 function useMeasureWidth(text: string, gapPx: number, fontPx: number, letterSpacingEm: number) {
   const measureRef = useRef<HTMLDivElement>(null)
@@ -25,7 +25,7 @@ export const AlbumMarquee: React.FC = () => {
   // Définir toutes les valeurs avant toute condition pour garder un ordre de hooks stable
   const gapPx = 55
   const fontPx = 120
-  const letterSpacingEm = 0.04
+  const letterSpacingEm = 0
   const text = (model?.albumTitle ?? '').toUpperCase()
   const speedSec = model?.marqueeSpeedSec ?? 30
 
@@ -70,7 +70,7 @@ export const AlbumMarquee: React.FC = () => {
             width: '100%',
             overflowX: 'hidden',
             overflowY: 'visible',
-            paddingTop: '15%',
+            paddingTop: '10%',
             paddingBottom: '8px',
           }}
         >

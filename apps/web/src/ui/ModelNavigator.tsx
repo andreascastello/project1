@@ -23,8 +23,14 @@ export const ModelNavigator: React.FC = () => {
 
   const discoveredSet = useMemo(() => new Set(discoveredNames), [discoveredNames])
   // Hooks toujours appelés, même si on rend null plus bas
-  const babyNames = useMemo(() => ['Hayabusa', 'Flower (BBH)'], [])
-  const babyFoundAll = babyNames.every(n => discoveredNames.includes(n))
+  const babyNames = useMemo(
+    () => allModels.filter(m => (m.facet ?? 'femtogo') === 'baby').map(m => m.name),
+    [allModels]
+  )
+  const babyFoundAll = useMemo(() => {
+    if (babyNames.length === 0) return false
+    return babyNames.every(n => discoveredNames.includes(n))
+  }, [babyNames, discoveredNames])
   const isActive = !!activeModelName
   const discoveredCountInOrder = orderedNames.filter(n => discoveredSet.has(n)).length
   const canNavigate = discoveredCountInOrder >= 2

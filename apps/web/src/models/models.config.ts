@@ -107,7 +107,7 @@ export const models: ModelConfig[] = [
     focusScaleMultiplier: 2.3,
     layer: 'background',
     exposure: 2,
-    albumTitle: 'LA BÊTE',
+    albumTitle: 'LA BETE',
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/6EvcYoFlmSH1VZaFNyOFlG',
   },

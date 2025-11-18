@@ -90,7 +90,20 @@ const DualPassRenderer: React.FC = () => {
       camera.layers.enable(1)
       camera.layers.enable(2)
       gl.autoClear = true
+      // Appliquer le cadrage décentré en page détail comme côté FEMTOGO
+      if (activeModelName && (camera as any).isPerspectiveCamera) {
+        const fullW = size.width
+        const fullH = size.height
+        const offsetX = Math.round(-NDC_X * fullW * 0.5)
+        const offsetY = Math.round(NDC_Y * fullH * 0.5)
+        ;(camera as THREE.PerspectiveCamera).setViewOffset(fullW, fullH, offsetX, offsetY, fullW, fullH)
+        camera.updateProjectionMatrix()
+      }
       gl.render(scene, camera)
+      if ((camera as any).isPerspectiveCamera) {
+        (camera as THREE.PerspectiveCamera).clearViewOffset()
+        camera.updateProjectionMatrix()
+      }
       return
     }
 

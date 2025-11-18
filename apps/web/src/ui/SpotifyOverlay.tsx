@@ -23,7 +23,7 @@ export const SpotifyOverlay: React.FC = () => {
     <div
       style={{
         position: 'fixed',
-        top: '60%',
+        top: '54%',
         right: GAP_RIGHT,
         zIndex: 60,
         width: CARD_WIDTH,

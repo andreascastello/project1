@@ -46,9 +46,7 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
   const origin = `${animatedOrigin.x}% ${animatedOrigin.y}%`
   const bgUrl = facet === 'baby' ? babyBg : backgroundImage
   const bgScale = activeModelName ? 2 : 1
-  const bgBlur = activeModelName ? '20px' : '0px'
-  const midBlur = activeModelName ? '12px' : '0px'
-  const foreBlur = activeModelName ? '6px' : '0px'
+  const bgBlur = activeModelName ? '4px' : '0px'
 
   return (
     <>
@@ -79,7 +77,6 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
             backgroundRepeat: 'no-repeat',
             zIndex: 2,
             transformOrigin: origin,
-            filter: `blur(${midBlur})`,
             transition: 'transform 500ms ease-out, filter 500ms ease-out',
             opacity: 0.8
           }}
@@ -97,7 +94,6 @@ export const CSSBackground: React.FC<CSSBackgroundProps> = ({
             backgroundRepeat: 'no-repeat',
             zIndex: 3,
             transformOrigin: origin,
-            filter: `blur(${foreBlur})`,
             transition: 'transform 500ms ease-out, filter 500ms ease-out',
             opacity: 0.6
           }}
