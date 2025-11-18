@@ -173,6 +173,28 @@ export const SceneCanvas: React.FC = () => {
   const orbitInterruptRef = useRef(false)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
   const sizeRef = useRef<{ width: number, height: number } | null>(null)
+  // Memoriser l'origine de fond "au repos" (sans focus/zoom) pour chaque modèle
+  const baseBgOriginRef = useRef<Map<string, { x: number, y: number }>>(new Map())
+  // Mémoriser l'origine de fond réellement utilisée (après calcul complet) par modèle
+  const lastFocusedBgOriginRef = useRef<Map<string, { x: number, y: number }>>(new Map())
+
+  // Recalculer les origines "au repos" quand la scène est prête et qu'aucun focus n'est actif
+  React.useEffect(() => {
+    if (activeModelName) return
+    const cam = cameraRef.current
+    const sz = sizeRef.current
+    if (!cam || !sz) return
+    const nextMap = new Map<string, { x: number, y: number }>()
+    for (const m of models) {
+      const rendered = getRenderedObject(m.name)
+      const targetObject = rendered ?? loaded[m.name]?.gltf.scene
+      if (!targetObject) continue
+      const { center } = computeFocusFromObject(targetObject)
+      const base = worldToPercent(center, cam, sz)
+      nextMap.set(m.name, base)
+    }
+    baseBgOriginRef.current = nextMap
+  }, [activeModelName, loaded])
 
   const handleSelect = useCallback((name: string) => {
     if (name === '') {
@@ -196,21 +218,39 @@ export const SceneCanvas: React.FC = () => {
 // compute true center & distance
 const { center, distance } = computeFocusFromObject(targetObject)
 
-    // Avant de bouger la caméra, mesurer la position écran du centre
+    // Avant de bouger la caméra, déterminer l'origine background à appliquer
     try {
-      const cam = cameraRef.current
-      const sz = sizeRef.current
-      if (cam && sz) {
-        const base = worldToPercent(center, cam, sz) // {x,y} en %
+      // 1) Priorité: si on a déjà mémorisé l'origine EXACTE utilisée lors d'un focus précédent de ce modèle, on la réutilise telle quelle (cohérence parfaite).
+      const lastExact = lastFocusedBgOriginRef.current.get(name)
+      if (lastExact) {
+        setBgTransformOrigin(lastExact)
+      } else {
+        // 2) Sinon, on part de l'origine "au repos" (indépendante du focus) puis on ajoute le décalage de cadrage
+        const baseFromMemo = baseBgOriginRef.current.get(name)
         const NDC_X = -0.3
         const NDC_Y = -0.3
-        
         const dxPct = -NDC_X * 50
         const dyPct = -NDC_Y * 50
-        
-        const x = Math.max(0, Math.min(100, base.x + dxPct))
-        const y = Math.max(0, Math.min(100, base.y + dyPct))
-        setBgTransformOrigin({ x, y })
+        if (baseFromMemo) {
+          // Ne pas clamp pour permettre un pivot hors du cadre et accentuer le mouvement aux extrêmes
+          const x = baseFromMemo.x + dxPct
+          const y = baseFromMemo.y + dyPct
+          const origin = { x, y }
+          setBgTransformOrigin(origin)
+          lastFocusedBgOriginRef.current.set(name, origin)
+        } else {
+          // 3) Fallback: calcul immédiat via caméra courante
+          const cam = cameraRef.current
+          const sz = sizeRef.current
+          if (cam && sz) {
+            const base = worldToPercent(center, cam, sz)
+            const x = base.x + dxPct
+            const y = base.y + dyPct
+            const origin = { x, y }
+            setBgTransformOrigin(origin)
+            lastFocusedBgOriginRef.current.set(name, origin)
+          }
+        }
       }
     } catch {}
 

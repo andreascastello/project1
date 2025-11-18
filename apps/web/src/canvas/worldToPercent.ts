@@ -10,8 +10,9 @@ export function worldToPercent(world: THREE.Vector3, camera: THREE.Camera, size:
   const x = ((ndc.x + 1) / 2) * 100
   const y = ((-ndc.y + 1) / 2) * 100
   return {
-    x: Math.max(0, Math.min(100, x)),
-    y: Math.max(0, Math.min(100, y)),
+    // Ne pas clamp pour permettre des origines de transformation au-delà de [0..100] et renforcer l'effet aux extrêmes
+    x,
+    y,
   }
 }
 
