@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import type { LoadedModel } from '../hooks/useStableModelCache'
 import { registerRenderedObject, unregisterRenderedObject } from '../state/RenderedObjectRegistry'
 import { useActiveModel } from '../state/ActiveModelContext'
-import { models } from '../models/models.config'
+import { models, PORTAL_MODEL_NAME } from '../constants'
 
 interface ModelItemProps {
   loadedModel: LoadedModel
@@ -19,12 +19,11 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
   // La rotation par drag est gérée par OrbitControls côté scène
   const { discoveredNames, facet, playInk, setFacet } = useActiveModel()
-  const PORTAL_NAME = 'Faded Flower'
-  const isPortal = loadedModel.name === PORTAL_NAME
+  const isPortal = loadedModel.name === PORTAL_MODEL_NAME
   // Débloquer le portail uniquement quand TOUTES les 3D FEMTOGO (hors portail) sont découvertes
   const otherNames = useMemo(
     () => models
-      .filter(m => (m.facet ?? 'femtogo') === 'femtogo' && m.name !== PORTAL_NAME)
+      .filter(m => (m.facet ?? 'femtogo') === 'femtogo' && m.name !== PORTAL_MODEL_NAME)
       .map(m => m.name),
     []
   )

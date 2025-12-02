@@ -8,7 +8,7 @@ import { SceneLights } from './SceneLights'
 import { ModelCollection } from '../components/ModelCollection'
 import { FluidCameraRig } from './FluidCameraRig'
 import { useStableModelCache } from '../hooks/useStableModelCache'
-import { models } from '../models/models.config'
+import { models } from '../constants'
 import { getRenderedObject } from '../state/RenderedObjectRegistry'
 import { worldToPercent } from './worldToPercent'
 

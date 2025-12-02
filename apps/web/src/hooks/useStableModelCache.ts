@@ -1,6 +1,6 @@
 import { useGLTF } from '@react-three/drei'
 import type { GLTF } from 'three-stdlib'
-import { models, type ModelConfig } from '../models/models.config'
+import { models, type ModelConfig } from '../constants'
 
 // Configurer Draco decoder
 useGLTF.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/')

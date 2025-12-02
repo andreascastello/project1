@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { models } from '../models/models.config'
+import { models } from '../constants'
 
 interface LoadingState {
   isLoading: boolean

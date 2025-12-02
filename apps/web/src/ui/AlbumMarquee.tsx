@@ -1,8 +1,6 @@
 import React, { useMemo, useRef, useLayoutEffect, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
-import { models } from '../models/models.config'
-
-const FONT_STACK = `'SerpentCresh', 'Tusker Grotesk 5800 Super', 'Tusker Grotesk', 'Impact', 'Arial Black', system-ui, sans-serif`
+import { models, ALBUM_MARQUEE_FONT_STACK } from '../constants'
 
 function useMeasureWidth(text: string, gapPx: number, fontPx: number, letterSpacingEm: number) {
   const measureRef = useRef<HTMLDivElement>(null)
@@ -44,7 +42,7 @@ export const AlbumMarquee: React.FC = () => {
         <div
           ref={measureRef}
           style={{
-            fontFamily: FONT_STACK,
+            fontFamily: ALBUM_MARQUEE_FONT_STACK,
             fontSize: `${fontPx}px`,
             letterSpacing: `${letterSpacingEm}em`,
             whiteSpace: 'nowrap',
@@ -89,7 +87,7 @@ export const AlbumMarquee: React.FC = () => {
                 <span
                   key={`a-${i}`}
                   style={{
-                    fontFamily: FONT_STACK,
+                    fontFamily: ALBUM_MARQUEE_FONT_STACK,
                     fontSize: `${fontPx}px`,
                     letterSpacing: `${letterSpacingEm}em`,
                     lineHeight: 1.12,
@@ -106,7 +104,7 @@ export const AlbumMarquee: React.FC = () => {
                 <span
                   key={`b-${i}`}
                   style={{
-                    fontFamily: FONT_STACK,
+                    fontFamily: ALBUM_MARQUEE_FONT_STACK,
                     fontSize: `${fontPx}px`,
                     letterSpacing: `${letterSpacingEm}em`,
                     lineHeight: 1.12,

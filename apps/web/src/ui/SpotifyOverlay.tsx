@@ -1,5 +1,5 @@
 import React from 'react'
-import { models } from '../models/models.config'
+import { models } from '../constants'
 import { useActiveModel } from '../state/ActiveModelContext'
 
 const CARD_WIDTH = 300
