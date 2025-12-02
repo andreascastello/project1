@@ -18,7 +18,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const groupRef = useRef<THREE.Group>(null)
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
   // La rotation par drag est gérée par OrbitControls côté scène
-  const { discoveredNames, facet } = useActiveModel()
+  const { discoveredNames, facet, playInk, setFacet } = useActiveModel()
   const PORTAL_NAME = 'Faded Flower'
   const isPortal = loadedModel.name === PORTAL_NAME
   // Débloquer le portail uniquement quand TOUTES les 3D FEMTOGO (hors portail) sont découvertes
@@ -28,7 +28,8 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       .map(m => m.name),
     []
   )
-  const isPortalUnlocked = isPortal && otherNames.every(n => discoveredNames.includes(n))
+  // Pour faciliter les tests: rendre le portail toujours cliquable
+  const isPortalUnlocked = isPortal ? true : otherNames.every(n => discoveredNames.includes(n))
 
   // Enregistrer le groupe réellement rendu pour le calcul de focus/centre
   useEffect(() => {
@@ -129,20 +130,17 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     })
   }, [loadedModel.name, loadedModel.exposure, isActive])
 
-  const { showTransition, hideTransition, setFacet, setActiveModelName: setActive } = useActiveModel() as any
+  const { setActiveModelName: setActive } = useActiveModel() as any
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
-    // Portail non cliquable tant que non débloqué
-    if (isPortal && !isPortalUnlocked) return
-    if (isPortal && isPortalUnlocked) {
-      showTransition("C'est juste un autre jour…")
+    // Portail: lancer d'abord la vidéo d'encre, puis basculer sur la facette Baby
+    // un peu plus tard (au milieu de l'animation).
+    if (isPortal) {
+      playInk()
       window.setTimeout(() => {
-        hideTransition()
-        // Basculer sur la facette Baby après la transition
-        setActive(null)
         setFacet('baby')
-      }, 1200)
+      }, 700)
       return
     }
     // On peut cliquer pour sélectionner si aucun objet n'est actif
@@ -153,12 +151,12 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       // Ne plus quitter/désélectionner en cliquant sur l'actif
     }
     // Si un autre objet est actif, on ne fait rien
-  }, [activeModelName, onSelect, loadedModel.name, isPortal, isPortalUnlocked, showTransition, hideTransition])
+  }, [activeModelName, onSelect, loadedModel.name, isPortal, isPortalUnlocked, playInk, setFacet])
 
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation()
     // Quand un modèle est actif, on ne rend rien "cliquable"
-    const canInteract = !activeModelName && (!isPortal || isPortalUnlocked)
+    const canInteract = !activeModelName && (!isPortal || true)
     if (!canInteract) return
     document.body.style.cursor = 'pointer'
   }, [activeModelName, loadedModel.name, isPortal, isPortalUnlocked])

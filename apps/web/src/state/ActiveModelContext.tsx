@@ -21,6 +21,10 @@ interface ActiveModelContextType {
   transitionQuote: string | null
   showTransition: (quote: string) => void
   hideTransition: () => void
+  // Transition vidéo encre (simple)
+  inkVisible: boolean
+  playInk: () => void
+  stopInk: () => void
 }
 
 const ActiveModelContext = createContext<ActiveModelContextType | undefined>(undefined)
@@ -35,6 +39,7 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [discoveredNames, setDiscoveredNames] = useState<string[]>([])
   const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
   const [transitionQuote, setTransitionQuote] = useState<string | null>(null)
+  const [inkVisible, setInkVisible] = useState<boolean>(false)
   const selectRef = React.useRef<(name: string) => void>(() => {})
   const selectModelByName = useCallback((name: string) => {
     selectRef.current(name)
@@ -50,6 +55,13 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [])
   const hideTransition = useCallback(() => {
     setTransitionQuote(null)
+  }, [])
+
+  const playInk = useCallback(() => {
+    setInkVisible(true)
+  }, [])
+  const stopInk = useCallback(() => {
+    setInkVisible(false)
   }, [])
 
   const value: ActiveModelContextType = {
@@ -68,6 +80,9 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     transitionQuote,
     showTransition,
     hideTransition,
+    inkVisible,
+    playInk,
+    stopInk,
   }
 
   return (
