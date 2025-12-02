@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useStableModelCache } from '../hooks/useStableModelCache'
 import { ModelItem } from './ModelItem'
 import { useActiveModel } from '../state/ActiveModelContext'
+import { useLoading } from '../providers/LoadingProvider'
 
 interface ModelCollectionProps {
   activeModelName: string | null
@@ -12,6 +13,13 @@ interface ModelCollectionProps {
 export const ModelCollection: React.FC<ModelCollectionProps> = ({ activeModelName, onSelect, colorMode = false }) => {
   const loadedModels = useStableModelCache()
   const { facet } = useActiveModel()
+  const { setLoaded } = useLoading()
+
+  // Une fois que les modèles sont réellement chargés (Suspense résolu),
+  // on peut signaler au provider de masquer l'écran de loading.
+  useEffect(() => {
+    setLoaded()
+  }, [setLoaded])
 
   return (
     <group>

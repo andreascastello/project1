@@ -16,19 +16,6 @@ const AppContent: React.FC = () => {
   const { isLoading, progress, loadedCount, totalModels, error } = useLoading()
   const { activeModelName } = useActiveModel()
 
-  // Afficher l'écran de loading tant que les modèles ne sont pas chargés
-  if (isLoading || error) {
-    return (
-      <LoadingScreen 
-        progress={progress}
-        loadedCount={loadedCount}
-        totalModels={totalModels}
-        error={error}
-      />
-    )
-  }
-
-  // Une fois les modèles chargés, afficher l'application principale ultra fluide
   return (
     <div className="w-full h-screen relative overflow-hidden bg-black">
       {/* Background CSS 3 layers - ultra optimisé */}
@@ -41,11 +28,21 @@ const AppContent: React.FC = () => {
         <SceneCanvas />
       </ErrorBoundary>
       
-      {/* UI overlay optimisé - texte retiré */}
-
-      {/* Overlay Spotify lié au modèle actif (flottant à droite) */}
+      {/* UI overlay optimisé */}
       <SpotifyOverlay />
       <InkTransitionOverlay />
+
+      {/* Écran de loading en overlay pendant que les modèles 3D se chargent réellement */}
+      {(isLoading || error) && (
+        <div className="fixed inset-0 z-[9999]">
+          <LoadingScreen
+            progress={progress}
+            loadedCount={loadedCount}
+            totalModels={totalModels}
+            error={error}
+          />
+        </div>
+      )}
     </div>
   )
 }

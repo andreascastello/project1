@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { models } from '../constants'
 
 interface LoadingState {
@@ -30,28 +30,12 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   })
 
   const setLoaded = () => {
-    // Simulation de progression pour l'UX
-    let progress = 0
-    const progressTimer = setInterval(() => {
-      progress += 20
-      setLoadingState(prev => ({
-        ...prev,
-        progress: Math.min(progress, 100),
-        loadedCount: models.length
-      }))
-
-      if (progress >= 100) {
-        clearInterval(progressTimer)
-        setTimeout(() => {
-          setLoadingState(prev => ({
-            ...prev,
-            isLoading: false,
-            progress: 100
-          }))
-          console.log('✅ Tous les modèles 3D ont été chargés en cache avec succès!')
-        }, 500)
-      }
-    }, 200)
+    setLoadingState(prev => ({
+      ...prev,
+      isLoading: false,
+      progress: 100,
+      loadedCount: prev.totalModels,
+    }))
   }
 
   const setError = (error: string) => {
@@ -61,15 +45,6 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
       error
     }))
   }
-
-  // Démarrer le chargement automatiquement
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoaded()
-    }, 100) // Petit délai pour montrer l'écran de loading
-
-    return () => clearTimeout(timer)
-  }, [])
 
   const contextValue: LoadingContextType = {
     ...loadingState,
