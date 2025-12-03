@@ -1,13 +1,38 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { models } from '../constants'
 import { useActiveModel } from '../state/ActiveModelContext'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 const CARD_WIDTH = 300
 const GAP_RIGHT = 200
-const ANIM_MS = 500
+const ANIM_SEC = 0.8
 
 export const SpotifyOverlay: React.FC = () => {
   const { activeModelName } = useActiveModel()
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  // Animation d'entrée smooth du player Spotify lorsque l'on arrive sur la page détail
+  useGSAP(
+    () => {
+      const card = cardRef.current
+      if (!card) return
+      if (!activeModelName) return
+      gsap.fromTo(
+        card,
+        { x: 20, opacity: 0 },
+        {
+          // slide léger depuis la droite + fade, avec un petit délai
+          x: 0,
+          opacity: 1,
+          duration: ANIM_SEC,
+          delay: ANIM_SEC, // laisser le temps au marquee et à la 3D de démarrer, et à l'embed de se charger
+          ease: 'power3.out',
+        }
+      )
+    },
+    { dependencies: [activeModelName], scope: cardRef }
+  )
 
   if (!activeModelName) return null
 
@@ -33,12 +58,10 @@ export const SpotifyOverlay: React.FC = () => {
       aria-live="polite"
     >
       <div
+        ref={cardRef}
         style={{
           pointerEvents: 'auto',
           // Rendu 100% natif Spotify: pas de fond ni bordure ni ombre
-          transform: 'translateY(8px)',
-          opacity: 0,
-          animation: `spotify-enter ${ANIM_MS}ms ease forwards`,
         }}
       >
         <iframe
@@ -55,12 +78,6 @@ export const SpotifyOverlay: React.FC = () => {
         />
       </div>
 
-      <style>{`
-        @keyframes spotify-enter {
-          0% { opacity: 0; transform: translateY(8px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   )
 }
