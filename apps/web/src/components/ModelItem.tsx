@@ -17,6 +17,7 @@ interface ModelItemProps {
 export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onSelect, activeModelName }) => {
   const groupRef = useRef<THREE.Group>(null)
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
+  const layerObjectsRef = useRef<THREE.Object3D[]>([])
   // La rotation par drag est gérée par OrbitControls côté scène
   const { discoveredNames, facet, playInk, setFacet } = useActiveModel()
   const isPortal = loadedModel.name === PORTAL_MODEL_NAME
@@ -41,15 +42,13 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   }, [loadedModel.name])
 
   useEffect(() => {
-    const group = groupRef.current
-    if (!group) return
     // En facet "baby": forcer layer 2 (couleur), sinon logique normale
     const targetLayer = facet === 'baby' ? 2 : (isPortalUnlocked ? 2 : (isActive ? 2 : 1))
-    group.traverse((obj: any) => {
-      if (obj && obj.layers && typeof obj.layers.set === 'function') {
+    for (const obj of layerObjectsRef.current) {
+      if (obj && (obj as any).layers && typeof (obj as any).layers.set === 'function') {
         obj.layers.set(targetLayer)
       }
-    })
+    }
   }, [isActive, isPortalUnlocked, facet])
 
   // Mémoïser le clone pour éviter de le recréer à chaque render
@@ -61,7 +60,11 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   useEffect(() => {
     const group = groupRef.current
     materialsRef.current = []
+    layerObjectsRef.current = []
     if (!group) return
+
+    const layerObjects: THREE.Object3D[] = []
+
     group.traverse((child: any) => {
       if (!child.isMesh || !child.material) return
       const pushMaterial = (mesh: any, mat: any) => {
@@ -70,6 +73,11 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
         }
         mat.transparent = true
         materialsRef.current.push({ mesh, material: mat })
+
+        // Indexer les objets qui portent réellement les materials (meshes) pour changer les layers plus tard
+        if (!layerObjects.includes(mesh)) {
+          layerObjects.push(mesh)
+        }
       }
       if (Array.isArray(child.material)) {
         child.material.forEach((mat: any) => pushMaterial(child, mat))
@@ -77,6 +85,8 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
         pushMaterial(child, child.material)
       }
     })
+
+    layerObjectsRef.current = layerObjects
   }, [clonedScene])
 
   // Lerp d'opacité pour faire disparaître les layers background/midground lorsque un modèle est actif
@@ -105,8 +115,6 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   // Ajuster l'exposition en multipliant la couleur de base par le scalar.
   // Si le modèle est actif, on revient à l'exposition "normale" (1.0).
   useEffect(() => {
-    const group = groupRef.current
-    if (!group) return
     const exposure = isActive ? 1 : (loadedModel.exposure ?? 1)
 
     const applyExposure = (material: any) => {
@@ -119,14 +127,9 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       material.needsUpdate = true
     }
 
-    group.traverse((child: any) => {
-      if (!child.isMesh || !child.material) return
-      if (Array.isArray(child.material)) {
-        child.material.forEach((mat: any) => applyExposure(mat))
-      } else {
-        applyExposure(child.material)
-      }
-    })
+    for (const { material } of materialsRef.current) {
+      applyExposure(material)
+    }
   }, [loadedModel.name, loadedModel.exposure, isActive])
 
   const { setActiveModelName: setActive } = useActiveModel() as any
