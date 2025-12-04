@@ -30,12 +30,12 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   })
 
   const setLoaded = () => {
-    setLoadingState(prev => ({
-      ...prev,
-      isLoading: false,
+          setLoadingState(prev => ({
+            ...prev,
+            isLoading: false,
       progress: 100,
       loadedCount: prev.totalModels,
-    }))
+          }))
   }
 
   const setError = (error: string) => {

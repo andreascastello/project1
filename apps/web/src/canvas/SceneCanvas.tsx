@@ -3,6 +3,8 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing'
 import * as THREE from 'three'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import { SceneLights } from './SceneLights'
 import { ModelCollection } from '../components/ModelCollection'
@@ -178,6 +180,10 @@ export const SceneCanvas: React.FC = () => {
   // Mémoriser l'origine de fond réellement utilisée (après calcul complet) par modèle
   const lastFocusedBgOriginRef = useRef<Map<string, { x: number, y: number }>>(new Map())
 
+  // Overlay de fondu noir au reset
+  const resetOverlayRef = React.useRef<HTMLDivElement | null>(null)
+  const [resetSeq, setResetSeq] = React.useState(0)
+
   // Recalculer les origines "au repos" quand la scène est prête et qu'aucun focus n'est actif
   React.useEffect(() => {
     if (activeModelName) return
@@ -198,14 +204,8 @@ export const SceneCanvas: React.FC = () => {
 
   const handleSelect = useCallback((name: string) => {
     if (name === '') {
-      setActiveModelName(null)
-      setCameraTarget({ pos: [0, 0, 12], look: [0, 0, 0] })
-      setBgTransformOrigin(null)
-      // reset orbit target to scene origin
-      if (controlsRef.current) {
-        controlsRef.current.target.set(0, 0, 0)
-        controlsRef.current.update()
-      }
+      // Incrémenter une séquence de reset pour déclencher l'animation GSAP du fondu noir + reset caméra/scène
+      setResetSeq((s) => s + 1)
       return
     }
 
@@ -263,7 +263,53 @@ const { center, distance } = computeFocusFromObject(targetObject)
       controlsRef.current.target.copy(center)
       controlsRef.current.update()
     }
-  }, [loaded, setActiveModelName, setCameraTarget, addDiscovered])
+  }, [loaded, setActiveModelName, setCameraTarget, setBgTransformOrigin, addDiscovered])
+
+  // Animation GSAP du fondu noir + reset de la caméra/scène
+  useGSAP(
+    () => {
+      if (resetSeq === 0) return
+      const overlay = resetOverlayRef.current
+      if (!overlay) return
+
+      const tl = gsap.timeline()
+
+      // 1) Fade-in rapide du noir
+      tl.fromTo(
+        overlay,
+        { opacity: 0, pointerEvents: 'none' },
+        {
+          opacity: 1,
+          pointerEvents: 'auto',
+          duration: 0.3,
+          ease: 'power2.out',
+        }
+      )
+
+      // 2) Une fois le noir en place, remettre la scène/caméra à l'état initial
+      tl.add(() => {
+        setActiveModelName(null)
+        setCameraTarget({ pos: [0, 0, 12], look: [0, 0, 0] })
+        setBgTransformOrigin(null)
+        if (controlsRef.current) {
+          controlsRef.current.target.set(0, 0, 0)
+          controlsRef.current.update()
+        }
+      })
+
+      // 3) Laisser le temps aux animations internes (FluidCameraRig, opacités) de se stabiliser, puis fade-out
+      tl.to(overlay, {
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power2.inOut',
+        delay: 0.4,
+        onComplete: () => {
+          gsap.set(overlay, { pointerEvents: 'none' })
+        },
+      })
+    },
+    { dependencies: [resetSeq], scope: resetOverlayRef }
+  )
 
   // Expose handleSelect to context for external navigation controls
   React.useEffect(() => {
@@ -284,6 +330,18 @@ const { center, distance } = computeFocusFromObject(targetObject)
 
   return (
     <>
+      {/* Fondu noir léger quand on quitte la page détail pour laisser la caméra/scene se remettre en place */}
+      <div
+        ref={resetOverlayRef}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#000',
+          opacity: 0,
+          pointerEvents: 'none',
+          zIndex: 200,
+        }}
+      />
       {activeModelName && (
         <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
           <button

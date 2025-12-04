@@ -18,18 +18,17 @@ export const SpotifyOverlay: React.FC = () => {
       const card = cardRef.current
       if (!card) return
       if (!activeModelName) return
-      gsap.fromTo(
-        card,
-        { x: 20, opacity: 0 },
-        {
-          // slide léger depuis la droite + fade, avec un petit délai
-          x: 0,
-          opacity: 1,
-          duration: ANIM_SEC,
-          delay: ANIM_SEC, // laisser le temps au marquee et à la 3D de démarrer, et à l'embed de se charger
-          ease: 'power3.out',
-        }
-      )
+      // Masquer immédiatement l'ancien contenu, pour éviter de voir le changement d'album
+      gsap.set(card, { x: 20, opacity: 0 })
+
+      // Puis faire entrer le nouveau player avec un léger décalage
+      gsap.to(card, {
+        x: 0,
+        opacity: 1,
+        duration: ANIM_SEC,
+        delay: ANIM_SEC, // laisser le temps au marquee / 3D et au nouvel embed de se charger
+        ease: 'power3.out',
+      })
     },
     { dependencies: [activeModelName], scope: cardRef }
   )
