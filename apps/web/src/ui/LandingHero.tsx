@@ -1,10 +1,10 @@
 import React, { useRef } from 'react'
 import gsap from 'gsap'
-import { ScrollTrigger, CustomEase } from 'gsap/all'
+import { ScrollTrigger, CustomEase, SplitText } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
 
 // Enregistrer les plugins nécessaires pour cette page
-gsap.registerPlugin(ScrollTrigger, CustomEase)
+gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText)
 
 // Courbe d'animation personnalisée façon "hop"
 CustomEase.create(
@@ -21,65 +21,31 @@ export const LandingHero: React.FC = () => {
 
   useGSAP(
     () => {
-        const ctx = gsap.context(() => {
+      // Flag local pour éviter de ré-attacher les listeners plusieurs fois
+      let hoverInitialized = false
+
+      const ctx = gsap.context(() => {
         const videoSection = videoSectionRef.current
-
-        // Lecture de la vidéo synchronisée avec le scroll
-        const video = videoRef.current
-
         const heroSection = heroRef.current
-        if (!video || !videoSection) return
 
-        const timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: '.landing-video-wrapper',
-            start: 'top top',
-            end: '+=150%',
-            scrub: true,
-            pin: true,
-          },
-        })
+        // --- SplitText + animation d'entrée du titre FEMTOGO puis du "welcome to" ---
+        const femtoSplit = new SplitText('.femtogo-title', { type: 'chars' })
+        const femtoChars = femtoSplit.chars as HTMLElement[]
 
-        const setupVideoAnimation = () => {
-          const duration = video.duration || 1
-          timeline.clear()
-          timeline
-            .fromTo(
-              videoSection,
-              { backgroundColor: '#D9D9D9' },
-              { backgroundColor: '#262626', duration: 0.5, ease: 'none' },
-              0
-            )
-            .fromTo(
-              video,
-              { opacity: 0 },
-              { opacity: 1, duration: 0.4, ease: 'power2.out' },
-              0.15
-            )
-            .to(
-              video,
-              {
-                currentTime: duration,
-                ease: 'none',
-              },
-              '>'
-            )
-        }
+        // Ajout de la classe pour le style/hover sur chaque caractère
+        femtoChars.forEach((char) => char.classList.add('hover-char'))
 
-        if (video.readyState >= 1 && !isNaN(video.duration)) {
-          setupVideoAnimation()
-        } else {
-          video.addEventListener('loadedmetadata', setupVideoAnimation, { once: true })
-        }
+        // Fonction qui n'active le hover qu'une fois l'intro terminée
+        const setupHoverAfterIntro = () => {
+          if (hoverInitialized) return
+          hoverInitialized = true
 
-        // --- Animation de hover façon "clients" : même comportement que ton exemple ---
-        const previewContainer = previewRef.current
-        const hoverTargets =
-          Array.from(
-            (heroRef.current?.querySelectorAll<HTMLElement>('.femtogo-title .hover-char')) || []
-          )
+          const previewContainer = previewRef.current
+          const currentHeroSection = heroRef.current
+          const hoverTargets = femtoChars
 
-        if (previewContainer && hoverTargets && hoverTargets.length > 0) {
+          if (!previewContainer || !hoverTargets || hoverTargets.length === 0) return
+
           let activeClientsIndex = -1
 
           hoverTargets.forEach((target, index) => {
@@ -99,7 +65,7 @@ export const LandingHero: React.FC = () => {
 
               activeClientsIndex = index
 
-              heroSection?.classList.add('has-image')
+              currentHeroSection?.classList.add('has-image')
 
               const clientImgWrapper = document.createElement('div')
               clientImgWrapper.className =
@@ -156,7 +122,7 @@ export const LandingHero: React.FC = () => {
 
               if (activeClientsIndex === index) {
                 activeClientsIndex = -1
-                heroSection?.classList.remove('has-image')
+                currentHeroSection?.classList.remove('has-image')
               }
 
               if (activeClientImg && activeClientImgWrapper) {
@@ -180,6 +146,73 @@ export const LandingHero: React.FC = () => {
             target.addEventListener('mouseover', handleMouseOver)
             target.addEventListener('mouseout', handleMouseOut)
           })
+        }
+
+        if (femtoChars.length > 0) {
+          // Timeline d'intro : FEMTOGO lettre par lettre, puis "welcome to"
+          const introTl = gsap.timeline()
+
+          introTl
+            .from(femtoChars, {
+              yPercent: 100,
+              duration: 1.8,
+              ease: 'expo.out',
+              stagger: 0.05,
+            })
+            .from('.sub-title', {
+              y: 20,
+              opacity: 0,
+              ease: 'expo.out',
+            })
+            // À la fin de la timeline, on active le hover
+            .add(setupHoverAfterIntro)
+        }
+
+        // Lecture de la vidéo synchronisée avec le scroll
+        const video = videoRef.current
+
+        if (!video || !videoSection) return
+
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: '.landing-video-wrapper',
+            start: 'top top',
+            end: '+=150%',
+            scrub: true,
+            pin: true,
+          },
+        })
+
+        const setupVideoAnimation = () => {
+          const duration = video.duration || 1
+          timeline.clear()
+          timeline
+            .fromTo(
+              videoSection,
+              { backgroundColor: '#D9D9D9' },
+              { backgroundColor: '#262626', duration: 0.5, ease: 'none' },
+              0
+            )
+            .fromTo(
+              video,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.4, ease: 'power2.out' },
+              0.15
+            )
+            .to(
+              video,
+              {
+                currentTime: duration,
+                ease: 'none',
+              },
+              '>'
+            )
+        }
+
+        if (video.readyState >= 1 && !isNaN(video.duration)) {
+          setupVideoAnimation()
+        } else {
+          video.addEventListener('loadedmetadata', setupVideoAnimation, { once: true })
         }
       }, rootRef)
 
@@ -210,15 +243,13 @@ export const LandingHero: React.FC = () => {
           <div className="relative w-full flex items-center justify-center">
             {/* Conteneur commun pour aligner les largeurs */}
             <div className="relative w-full max-w-5xl">
-              {/* Gros FEMTOGO en arrière-plan, unique élément split par GSAP */}
+              {/* Gros FEMTOGO en arrière-plan, split par SplitText */}
               <div className="text-black absolute inset-0 z-0 flex items-center justify-center">
                 <h1
                   className="femtogo-title block w-full text-center leading-none tracking-tight 
                   text-[20vw] md:text-[14vw] cursor-pointer"
                 >
-                  {'FEMTOGO'.split('').map((ch, i) => (
-                    <span key={i} className="hover-char" data-index={i}>{ch}</span>
-                  ))}
+                  FEMTOGO
                 </h1>
               </div>
 
