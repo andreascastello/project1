@@ -9,9 +9,10 @@ import { ModelNavigator } from './ui/ModelNavigator'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SpotifyOverlay } from './ui/SpotifyOverlay'
 import { InkTransitionOverlay } from './ui/InkTransitionOverlay'
+import { LandingHero } from './ui/LandingHero'
 import './App.css'
 
-// Composant principal de l'application avec cache
+// Composant principal de l'application actuelle (expérience 3D)
 const AppContent: React.FC = () => {
   const { isLoading, progress, loadedCount, totalModels, error } = useLoading()
   const { activeModelName } = useActiveModel()
@@ -47,15 +48,11 @@ const AppContent: React.FC = () => {
   )
 }
 
-// App wrapper avec tous les providers
+// App wrapper avec tous les providers pour l'expérience 3D
 const App: React.FC = () => {
-  return (
-    <LoadingProvider>
-      <ActiveModelProvider>
-        <AppContent />
-      </ActiveModelProvider>
-    </LoadingProvider>
-  )
+  // Pour l'instant : page d'accueil vidéo + scroll.
+  // On gardera ensuite AppContent pour enchaîner vers la scène 3D.
+  return <LandingHero />
 }
 
 export default App

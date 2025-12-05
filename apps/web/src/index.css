@@ -20,10 +20,38 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-html, body, #root {
+html,
+body {
   height: 100%;
 }
 
 body {
   @apply antialiased;
+  background-color: #d9d9d9;
+  color: #000;
+}
+
+/* ---------- LandingHero : preview image + effet "difference" ---------- */
+
+/* Titre FEMTOGO en mode mix-blend:difference
+   -> en blanc pour que la différence donne un texte sombre sur fond clair
+      et clair sur fond très sombre (image noire) */
+.has-image .sub-title {
+  mix-blend-mode: difference;
+}
+.sub-title {
+  font-family: 'Beauty Swing Personal Use', system-ui, sans-serif;
+  color: #fff;
+}
+
+/* Lettres individuelles interactives */
+.femtogo-title .hover-char {
+  pointer-events: auto;
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Le wrapper d’image doit laisser passer la souris */
+.hero-img-wrapper{
+  pointer-events: none;
 }

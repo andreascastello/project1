@@ -1,0 +1,265 @@
+import React, { useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger, CustomEase } from 'gsap/all'
+import { useGSAP } from '@gsap/react'
+
+// Enregistrer les plugins nécessaires pour cette page
+gsap.registerPlugin(ScrollTrigger, CustomEase)
+
+// Courbe d'animation personnalisée façon "hop"
+CustomEase.create(
+  'hop',
+  'M0,0 C0.71,0.505 0.192,0.726 0.318,0.852 0.45,0.984 0.504,1 1,1'
+)
+
+export const LandingHero: React.FC = () => {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const heroRef = useRef<HTMLElement | null>(null)
+  const videoSectionRef = useRef<HTMLElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const previewRef = useRef<HTMLDivElement | null>(null)
+
+  useGSAP(
+    () => {
+        const ctx = gsap.context(() => {
+        const videoSection = videoSectionRef.current
+
+        // Lecture de la vidéo synchronisée avec le scroll
+        const video = videoRef.current
+
+        const heroSection = heroRef.current
+        if (!video || !videoSection) return
+
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: '.landing-video-wrapper',
+            start: 'top top',
+            end: '+=150%',
+            scrub: true,
+            pin: true,
+          },
+        })
+
+        const setupVideoAnimation = () => {
+          const duration = video.duration || 1
+          timeline.clear()
+          timeline
+            .fromTo(
+              videoSection,
+              { backgroundColor: '#D9D9D9' },
+              { backgroundColor: '#262626', duration: 0.5, ease: 'none' },
+              0
+            )
+            .fromTo(
+              video,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.4, ease: 'power2.out' },
+              0.15
+            )
+            .to(
+              video,
+              {
+                currentTime: duration,
+                ease: 'none',
+              },
+              '>'
+            )
+        }
+
+        if (video.readyState >= 1 && !isNaN(video.duration)) {
+          setupVideoAnimation()
+        } else {
+          video.addEventListener('loadedmetadata', setupVideoAnimation, { once: true })
+        }
+
+        // --- Animation de hover façon "clients" : même comportement que ton exemple ---
+        const previewContainer = previewRef.current
+        const hoverTargets =
+          Array.from(
+            (heroRef.current?.querySelectorAll<HTMLElement>('.femtogo-title .hover-char')) || []
+          )
+
+        if (previewContainer && hoverTargets && hoverTargets.length > 0) {
+          let activeClientsIndex = -1
+
+          hoverTargets.forEach((target, index) => {
+            let activeClientImgWrapper: HTMLDivElement | null = null
+            let activeClientImg: HTMLImageElement | null = null
+
+            const handleMouseOver = () => {
+              // Même logique que dans ton script : si c'est déjà l'actif, on ne refait rien
+              if (activeClientsIndex === index) return
+
+              // Si un autre texte est déjà actif, on déclenche son mouseout pour fermer proprement l'image
+              if (activeClientsIndex !== -1) {
+                const previousClient = hoverTargets[activeClientsIndex]
+                const mouseoutEvent = new Event('mouseout')
+                previousClient.dispatchEvent(mouseoutEvent)
+              }
+
+              activeClientsIndex = index
+
+              heroSection?.classList.add('has-image')
+
+              const clientImgWrapper = document.createElement('div')
+              clientImgWrapper.className =
+                'hero-img-wrapper absolute inset-0 overflow-hidden will-change-[clip-path]'
+
+              const clientImg = document.createElement('img')
+
+              // Chaque target utilise une image basée sur son index (img1.jpeg, img2.jpeg, etc.)
+              clientImg.src = `/images/img${index + 1}.jpeg`
+              clientImg.alt = 'Preview'
+              // Remplir tout le cadre comme dans l'exemple de base
+              clientImg.style.width = '100%'
+              clientImg.style.height = '100%'
+              clientImg.style.objectFit = 'cover'
+
+              gsap.set(clientImg, { scale: 1.25, opacity: 0 })
+
+              clientImgWrapper.appendChild(clientImg)
+              previewContainer.appendChild(clientImgWrapper)
+
+              activeClientImgWrapper = clientImgWrapper
+              activeClientImg = clientImg
+
+              // État initial : même clip-path que dans ton CSS (tout fermé au centre)
+              gsap.set(clientImgWrapper, {
+                clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
+              })
+
+              // Ouverture du cadre
+              gsap.to(clientImgWrapper, {
+                clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                duration: 0.5,
+                ease: 'hop',
+              })
+
+              // Apparition
+              gsap.to(clientImg, {
+                opacity: 1,
+                duration: 0.25,
+                ease: 'power2.out',
+              })
+
+              gsap.to(clientImg, {
+                scale: 1,
+                duration: 1.25,
+                ease: 'power2.out',
+              })
+            }
+
+            const handleMouseOut = (event: Event) => {
+              const e = event as MouseEvent
+              // Comme dans ton script : si on passe d'un enfant du même élément, on ne ferme pas
+              if (e.relatedTarget && (target as HTMLElement).contains(e.relatedTarget as Node)) return
+
+              if (activeClientsIndex === index) {
+                activeClientsIndex = -1
+                heroSection?.classList.remove('has-image')
+              }
+
+              if (activeClientImg && activeClientImgWrapper) {
+                const clientImgToRemove = activeClientImg
+                const clientImgWrapperToRemove = activeClientImgWrapper
+
+                activeClientImg = null
+                activeClientImgWrapper = null
+
+                gsap.to(clientImgToRemove, {
+                  opacity: 0,
+                  duration: 0.5,
+                  ease: 'power1.out',
+                  onComplete: () => {
+                    clientImgWrapperToRemove.remove()
+                  },
+                })
+              }
+            }
+
+            target.addEventListener('mouseover', handleMouseOver)
+            target.addEventListener('mouseout', handleMouseOut)
+          })
+        }
+      }, rootRef)
+
+      return () => {
+        ctx.revert()
+      }
+    },
+    { scope: rootRef }
+  )
+
+  return (
+    <div
+      ref={rootRef}
+      className="min-h-screen w-full bg-[#D9D9D9] text-black relative overflow-x-hidden"
+    >
+      <div>
+        {/* Section texte d’accueil façon affiche */}
+        <section
+          id="hero"
+          ref={heroRef}
+          className="relative flex items-center justify-center h-screen px-6 bg-[#D9D9D9] text-black overflow-hidden"
+        >
+          {/* Aperçu d'image centré, dimensionné comme dans le projet initial */}
+          <div
+            ref={previewRef}
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] h-[75vh] z-10"
+          />
+          <div className="relative w-full flex items-center justify-center">
+            {/* Conteneur commun pour aligner les largeurs */}
+            <div className="relative w-full max-w-5xl">
+              {/* Gros FEMTOGO en arrière-plan, unique élément split par GSAP */}
+              <div className="text-black absolute inset-0 z-0 flex items-center justify-center">
+                <h1
+                  className="femtogo-title block w-full text-center font-black leading-none tracking-tight 
+                  text-[20vw] md:text-[14vw] cursor-pointer"
+                  style={{ fontFamily: 'Tusker Grotesk 5800 Super, Tusker Grotesk, system-ui, sans-serif' }}
+                >
+                  {'FEMTOGO'.split('').map((ch, i) => (
+                    <span key={i} className="hover-char" data-index={i}>{ch}</span>
+                  ))}
+                </h1>
+              </div>
+
+              {/* Texte welcome to en avant-plan, avec mix-blend-mode:difference comme dans ton exemple (non interactif) */}
+              <div className="sub-title relative z-20 flex items-center justify-center pointer-events-none">
+                <h2
+                  className="block w-full text-center 
+                  leading-none text-[15vw] md:text-[9vw] select-none 
+                  pointer-events-none"
+                >
+                  welcome to
+                </h2>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* Section vidéo contrôlée par le scroll */}
+        <section
+          ref={videoSectionRef}
+          className="h-[200vh] landing-video-wrapper"
+          style={{ backgroundColor: '#D9D9D9' }}
+        >
+          <div className="sticky top-0 h-screen flex items-center justify-center">
+            <div className="relative w-full max-w-5xl flex items-center justify-center">
+              <video
+                ref={videoRef}
+                src="/videos/intro.webm"
+                className="h-auto"
+                muted
+                playsInline
+                preload="auto"
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+export default LandingHero

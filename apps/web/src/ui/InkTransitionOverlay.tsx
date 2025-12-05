@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
@@ -7,7 +7,6 @@ export const InkTransitionOverlay: React.FC = () => {
   const { inkVisible, stopInk } = useActiveModel()
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const inkUrl = useMemo(() => new URL('../assets/ink.webm', import.meta.url).href, [])
 
   useGSAP(
     () => {
@@ -55,7 +54,7 @@ export const InkTransitionOverlay: React.FC = () => {
     >
       <video
         ref={videoRef}
-        src={inkUrl}
+        src="/videos/ink.webm"
         playsInline
         muted
         preload="auto"
