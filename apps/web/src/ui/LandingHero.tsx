@@ -213,9 +213,8 @@ export const LandingHero: React.FC = () => {
               {/* Gros FEMTOGO en arrière-plan, unique élément split par GSAP */}
               <div className="text-black absolute inset-0 z-0 flex items-center justify-center">
                 <h1
-                  className="femtogo-title block w-full text-center font-black leading-none tracking-tight 
+                  className="femtogo-title block w-full text-center leading-none tracking-tight 
                   text-[20vw] md:text-[14vw] cursor-pointer"
-                  style={{ fontFamily: 'Tusker Grotesk 5800 Super, Tusker Grotesk, system-ui, sans-serif' }}
                 >
                   {'FEMTOGO'.split('').map((ch, i) => (
                     <span key={i} className="hover-char" data-index={i}>{ch}</span>
@@ -223,12 +222,13 @@ export const LandingHero: React.FC = () => {
                 </h1>
               </div>
 
-              {/* Texte welcome to en avant-plan, avec mix-blend-mode:difference comme dans ton exemple (non interactif) */}
-              <div className="sub-title relative z-20 flex items-center justify-center pointer-events-none">
+              {/* Texte welcome to centré horizontalement mais positionné vers le bas du hero */}
+              <div className="sub-title absolute inset-x-0 top-1/2 -translate-y-1/2 
+              translate-y-[-15%] flex items-center justify-center pointer-events-none z-20">
                 <h2
                   className="block w-full text-center 
-                  leading-none text-[15vw] md:text-[9vw] select-none 
-                  pointer-events-none"
+                  leading-none text-[15vw] md:text-[9.6vw] select-none 
+                  pointer-events-none text-white stroke-black-shadow"
                 >
                   welcome to
                 </h2>

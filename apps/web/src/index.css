@@ -9,6 +9,14 @@
 }
 
 @font-face {
+  font-family: 'Tusker Grotesk 5800 Super';
+  src: url('/fonts/TuskerGrotesk5800Super.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'SerpentCresh';
   src: url('/fonts/SerpentCreshRegular.ttf') format('truetype');
   font-weight: 400;
@@ -18,6 +26,18 @@
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --color-white: #FFF5EE;
+  --color-black: #212122;
+}
+
+@layer utilities {
+  .stroke-black-shadow {
+    text-shadow:
+      -1px -1px 0 #212122,
+       1px -1px 0 #212122,
+      -1px  1px 0 #212122,
+       1px  1px 0 #212122;
+  }
 }
 
 html,
@@ -41,7 +61,6 @@ body {
 }
 .sub-title {
   font-family: 'Beauty Swing Personal Use', system-ui, sans-serif;
-  color: #fff;
 }
 
 /* Lettres individuelles interactives */
@@ -49,6 +68,8 @@ body {
   pointer-events: auto;
   display: inline-block;
   will-change: transform, opacity;
+  font-family: 'Tusker Grotesk 5800 Super', system-ui, sans-serif;
+  letter-spacing: 0.01em;
 }
 
 /* Le wrapper d’image doit laisser passer la souris */
