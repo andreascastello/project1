@@ -189,7 +189,7 @@ export const LandingHero: React.FC = () => {
           timeline
             .fromTo(
               videoSection,
-              { backgroundColor: '#D9D9D9' },
+              { backgroundColor: '#FFF5EE' },
               { backgroundColor: '#262626', duration: 0.5, ease: 'none' },
               0
             )
@@ -226,14 +226,14 @@ export const LandingHero: React.FC = () => {
   return (
     <div
       ref={rootRef}
-      className="min-h-screen w-full bg-[#D9D9D9] text-black relative overflow-x-hidden"
+      className="min-h-screen w-full bg-[#FFF5EE] text-black relative overflow-x-hidden"
     >
       <div>
         {/* Section texte d’accueil façon affiche */}
         <section
           id="hero"
           ref={heroRef}
-          className="relative flex items-center justify-center h-screen px-6 bg-[#D9D9D9] text-black overflow-hidden"
+          className="relative flex items-center justify-center h-screen px-6 text-black overflow-hidden"
         >
           {/* Aperçu d'image centré, dimensionné comme dans le projet initial */}
           <div
@@ -243,8 +243,8 @@ export const LandingHero: React.FC = () => {
           <div className="relative w-full flex items-center justify-center">
             {/* Conteneur commun pour aligner les largeurs */}
             <div className="relative w-full max-w-5xl">
-              {/* Gros FEMTOGO en arrière-plan, split par SplitText */}
-              <div className="text-black absolute inset-0 z-0 flex items-center justify-center">
+              {/* Gros FEMTOGO en arrière-plan, split par SplitText, uniquement en contour */}
+              <div className="absolute inset-0 flex items-center justify-center z-19">
                 <h1
                   className="femtogo-title block w-full text-center leading-none tracking-tight 
                   text-[20vw] md:text-[14vw] cursor-pointer"
@@ -261,7 +261,7 @@ export const LandingHero: React.FC = () => {
                   leading-none text-[15vw] md:text-[9.6vw] select-none 
                   pointer-events-none text-white stroke-black-shadow"
                 >
-                  welcome to
+                  Welcome to
                 </h2>
               </div>
 
@@ -273,7 +273,6 @@ export const LandingHero: React.FC = () => {
         <section
           ref={videoSectionRef}
           className="h-[200vh] landing-video-wrapper"
-          style={{ backgroundColor: '#D9D9D9' }}
         >
           <div className="sticky top-0 h-screen flex items-center justify-center">
             <div className="relative w-full max-w-5xl flex items-center justify-center">

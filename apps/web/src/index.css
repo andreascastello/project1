@@ -24,6 +24,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Young Morin';
+  src: url('/fonts/YoungMorin-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   --color-white: #FFF5EE;
@@ -40,6 +48,17 @@
   }
 }
 
+@layer utilities {
+  .stroke-white-shadow {
+    text-shadow:
+      -1px -1px 0 #FFF5EE,
+       1px -1px 0 #FFF5EE,
+      -1px  1px 0 #FFF5EE,
+       1px  1px 0 #FFF5EE;
+  }
+}
+
+
 html,
 body {
   height: 100%;
@@ -47,20 +66,28 @@ body {
 
 body {
   @apply antialiased;
-  background-color: #d9d9d9;
+  background-color: #FAFAFA;
   color: #000;
 }
 
 /* ---------- LandingHero : preview image + effet "difference" ---------- */
 
-/* Titre FEMTOGO en mode mix-blend:difference
-   -> en blanc pour que la différence donne un texte sombre sur fond clair
-      et clair sur fond très sombre (image noire) */
+/* Sous-titre "Welcome to" */
 .has-image .sub-title {
   mix-blend-mode: difference;
 }
 .sub-title {
-  font-family: 'Beauty Swing Personal Use', system-ui, sans-serif;
+  font-family: 'Young Morin', system-ui, sans-serif;
+}
+
+/* Titre FEMTOGO : uniquement en contour (pas de remplissage) */
+.femtogo-title {
+  color: #212122; /* aucun fill, on ne voit que le contour */
+  -webkit-text-stroke: 1px #fff5ee8b; /* contour blanc fin */
+}
+
+.has-image .femtogo-title {
+  color: transparent; /* on garde uniquement le stroke blanc quand l'image est visible */
 }
 
 /* Lettres individuelles interactives */
