@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 
 interface PressHoldButtonProps {
@@ -16,8 +16,17 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
 }) => {
   const [hasCompleted, setHasCompleted] = useState(false)
 
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
   const fillRef = useRef<HTMLDivElement | null>(null)
   const tweenRef = useRef<gsap.core.Tween | null>(null)
+  const pageShakeTlRef = useRef<gsap.core.Timeline | null>(null)
+
+  // Échelle de base plus petite
+  useEffect(() => {
+    if (wrapperRef.current) {
+      gsap.set(wrapperRef.current, { scale: 0.6, transformOrigin: '50% 50%' })
+    }
+  }, [])
 
   const resetFill = useCallback(() => {
     if (tweenRef.current) {
@@ -32,6 +41,43 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
     }
   }, [])
 
+  const startPageEffects = useCallback(() => {
+    const rootEl = document.getElementById('root')
+    if (!rootEl) return
+
+    if (pageShakeTlRef.current) {
+      pageShakeTlRef.current.kill()
+      pageShakeTlRef.current = null
+    }
+
+    // Petit tremblement en boucle (encore un peu plus accentué)
+    const tl = gsap.timeline({ repeat: -1, defaults: { duration: 0.035, ease: 'none' } })
+    tl.to(rootEl, { x: -8, y: 3 })
+      .to(rootEl, { x: 8, y: -3 })
+      .to(rootEl, { x: -3, y: -8 })
+      .to(rootEl, { x: 3, y: 8 })
+
+    pageShakeTlRef.current = tl
+  }, [])
+
+  const stopPageEffects = useCallback((instant = false) => {
+    const rootEl = document.getElementById('root')
+
+    if (pageShakeTlRef.current) {
+      pageShakeTlRef.current.kill()
+      pageShakeTlRef.current = null
+    }
+
+    if (!rootEl) return
+
+    gsap.to(rootEl, {
+      x: 0,
+      y: 0,
+      duration: instant ? 0 : 0.25,
+      ease: 'power2.out',
+    })
+  }, [])
+
   const startHold = useCallback(() => {
     if (hasCompleted) return
 
@@ -40,6 +86,8 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
       tweenRef.current.kill()
       tweenRef.current = null
     }
+
+    startPageEffects()
 
     if (!fillRef.current) return
 
@@ -51,10 +99,11 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
       onComplete: () => {
         tweenRef.current = null
         setHasCompleted(true)
+        stopPageEffects(true)
         if (onComplete) onComplete()
       },
     })
-  }, [durationMs, hasCompleted, onComplete])
+  }, [durationMs, hasCompleted, onComplete, startPageEffects, stopPageEffects])
 
   const endHold = useCallback(() => {
     if (hasCompleted) return
@@ -70,29 +119,53 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
         transformOrigin: '0% 50%',
       })
     }
-  }, [hasCompleted])
+    stopPageEffects()
+  }, [hasCompleted, stopPageEffects])
+
+  const handleHoverIn = useCallback(() => {
+    if (!wrapperRef.current) return
+    gsap.to(wrapperRef.current, {
+      scale: 0.7,
+      duration: 0.4,
+      ease: 'power3.out',
+    })
+  }, [])
+
+  const handleHoverOut = useCallback(() => {
+    if (!wrapperRef.current) return
+    gsap.to(wrapperRef.current, {
+      scale: 0.6,
+      duration: 0.4,
+      ease: 'power3.out',
+    })
+  }, [])
 
   return (
     <div className="flex items-center justify-center select-none">
-      <div className="flex items-center justify-center gap-0 origin-center scale-50 md:scale-70">
-        {/* Décor gauche */}
-        <img
-          src="/images/btn_heros.svg"
-          alt=""
-          aria-hidden="true"
-          className="h-auto w-auto pointer-events-none -mr-7"
-        />
-
-        {/* Bouton central press & hold */}
-        <button
-          type="button"
-          className="relative flex items-center justify-center outline-none"
-          onPointerDown={startHold}
-          onPointerUp={endHold}
-          onPointerLeave={endHold}
+      <button
+        type="button"
+        className="relative flex items-center justify-center outline-none"
+        onPointerDown={startHold}
+        onPointerUp={endHold}
+        onPointerLeave={endHold}
+        onMouseEnter={handleHoverIn}
+        onMouseLeave={handleHoverOut}
+      >
+        {/* Groupe décor + masque qui scale avec GSAP */}
+        <div
+          ref={wrapperRef}
+          className="flex items-center justify-center gap-0 origin-center"
         >
+          {/* Décor gauche */}
+          <img
+            src="/images/btn_heros.svg"
+            alt=""
+            aria-hidden="true"
+            className="h-auto w-auto pointer-events-none -mr-7"
+          />
+
+          {/* Zone centrale masquée par le SVG */}
           <div className="relative w-[356px] h-[124px] flex items-center justify-center">
-            {/* Wrapper masqué par le SVG : le masque est fixe, on révèle le fond noir à l’intérieur */}
             <div className="absolute inset-0 press-hold-mask z-0 overflow-hidden">
               <div
                 ref={fillRef}
@@ -100,24 +173,26 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
                 style={{ transform: 'scaleX(0)', transformOrigin: '0% 50%' }}
               />
             </div>
-
-            {/* Capsule noire centrale toujours visible */}
-            <div className="absolute z-10 px-2 py-3 bg-black flex items-center justify-center">
-              <span className="text-white text-[12px] tracking-[0.12em] uppercase font-[Tusker Grotesk 5800 Super]">
-                {label}
-              </span>
-            </div>
           </div>
-        </button>
 
-        {/* Décor droit (inversé horizontalement) */}
-        <img
-          src="/images/btn_heros.svg"
-          alt=""
-          aria-hidden="true"
-          className="h-auto w-auto pointer-events-none -scale-x-100 -ml-7"
-        />
-      </div>
+          {/* Décor droit (inversé horizontalement) */}
+          <img
+            src="/images/btn_heros.svg"
+            alt=""
+            aria-hidden="true"
+            className="h-auto w-auto pointer-events-none -scale-x-100 -ml-7"
+          />
+        </div>
+
+        {/* Capsule texte au-dessus, qui ne scale pas (hors wrapperRef) */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="px-2 py-3 bg-black flex items-center justify-center scale-60">
+            <span className="text-white text-[12px] tracking-[0.12em] uppercase font-[Tusker Grotesk 5800 Super]">
+              {label}
+            </span>
+          </div>
+        </div>
+      </button>
     </div>
   )
 }

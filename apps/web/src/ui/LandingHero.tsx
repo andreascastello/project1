@@ -147,7 +147,7 @@ export const LandingHero: React.FC = () => {
         }
 
         if (femtoChars.length > 0) {
-          // Timeline d'intro : FEMTOGO lettre par lettre, puis "welcome to"
+          // Timeline d'intro : FEMTOGO lettre par lettre, puis "welcome to" (plus rapide), puis le bouton
           const introTl = gsap.timeline()
 
           introTl
@@ -157,11 +157,26 @@ export const LandingHero: React.FC = () => {
               ease: 'expo.out',
               stagger: 0.05,
             })
-            .from('.sub-title', {
-              y: 20,
-              opacity: 0,
-              ease: 'expo.out',
-            })
+            .from(
+              '.sub-title',
+              {
+                y: 15,
+                opacity: 0,
+                duration: 0.6,
+                ease: 'expo.out',
+              },
+              '-=1' // commence avant la fin complète de FEMTOGO pour apparaître plus vite
+            )
+            .from(
+              '.hero-press-hold',
+              {
+                y: 40,
+                opacity: 0,
+                duration: 0.9,
+                ease: 'expo.out',
+              },
+              '>-0.2' // apparaît juste après "Welcome to"
+            )
             // À la fin de la timeline, on active le hover
             .add(setupHoverAfterIntro)
         }
@@ -185,18 +200,20 @@ export const LandingHero: React.FC = () => {
         <section
           id="hero"
           ref={heroRef}
-          className="relative flex items-center justify-center h-screen px-6 text-black overflow-hidden"
+          className="relative flex flex-col items-center justify-between h-screen px-6 text-black overflow-hidden"
         >
           {/* Aperçu d'image centré, dimensionné comme dans le projet initial */}
           <div
             ref={previewRef}
             className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] h-[75vh] z-10"
           />
-          <div className="relative w-full flex items-center justify-center">
+
+          {/* Bloc central : titres */}
+          <div className="relative w-full flex flex-col items-center justify-center flex-1">
             {/* Conteneur commun pour aligner les largeurs */}
             <div className="relative w-full max-w-5xl">
               {/* Gros FEMTOGO en arrière-plan, split par SplitText, uniquement en contour */}
-              <div className="absolute inset-0 flex items-center justify-center z-19">
+              <div className="absolute inset-0 flex items-center justify-center z-10">
                 <h1
                   className="femtogo-title block w-full text-center leading-none tracking-tight 
                   text-[20vw] md:text-[14vw] cursor-pointer"
@@ -216,14 +233,14 @@ export const LandingHero: React.FC = () => {
                   Welcome to
                 </h2>
               </div>
-
             </div>
-          </div>
-        </section>
 
-        {/* Bouton press & hold */}
-        <section className="w-full flex items-center justify-center pb-20">
-          <PressHoldButton />
+          </div>
+
+          {/* Bouton press & hold en bas du hero */}
+          <div className="hero-press-hold relative z-30 mb-10">
+            <PressHoldButton />
+          </div>
         </section>
       </div>
     </div>
