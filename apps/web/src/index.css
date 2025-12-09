@@ -34,7 +34,7 @@
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  --color-white: #FFF5EE;
+  --color-white: #FAFAFA;
   --color-black: #212122;
 }
 
@@ -51,10 +51,24 @@
 @layer utilities {
   .stroke-white-shadow {
     text-shadow:
-      -1px -1px 0 #FFF5EE,
-       1px -1px 0 #FFF5EE,
-      -1px  1px 0 #FFF5EE,
-       1px  1px 0 #FFF5EE;
+      -1px -1px 0 #FAFAFA,
+       1px -1px 0 #FAFAFA,
+      -1px  1px 0 #FAFAFA,
+       1px  1px 0 #FAFAFA;
+  }
+}
+
+@layer utilities {
+  /* Masque basé sur le SVG du bouton (mask_btn.svg) pour le remplissage progressif */
+  .press-hold-mask {
+    -webkit-mask-image: url('/images/mask_btn.svg');
+    mask-image: url('/images/mask_btn.svg');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
   }
 }
 
@@ -83,7 +97,7 @@ body {
 /* Titre FEMTOGO : uniquement en contour (pas de remplissage) */
 .femtogo-title {
   color: #212122; /* aucun fill, on ne voit que le contour */
-  -webkit-text-stroke: 1px #fff5ee8b; /* contour blanc fin */
+  -webkit-text-stroke: 1px #FAFAFA8b; /* contour blanc fin */
 }
 
 .has-image .femtogo-title {

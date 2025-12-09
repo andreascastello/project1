@@ -1,10 +1,11 @@
 import React, { useRef } from 'react'
 import gsap from 'gsap'
-import { ScrollTrigger, CustomEase, SplitText } from 'gsap/all'
+import { CustomEase, SplitText } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
+import PressHoldButton from './PressHoldButton'
 
 // Enregistrer les plugins nécessaires pour cette page
-gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText)
+gsap.registerPlugin(CustomEase, SplitText)
 
 // Courbe d'animation personnalisée façon "hop"
 CustomEase.create(
@@ -15,8 +16,6 @@ CustomEase.create(
 export const LandingHero: React.FC = () => {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
-  const videoSectionRef = useRef<HTMLElement | null>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
 
   useGSAP(
@@ -25,7 +24,6 @@ export const LandingHero: React.FC = () => {
       let hoverInitialized = false
 
       const ctx = gsap.context(() => {
-        const videoSection = videoSectionRef.current
         const heroSection = heroRef.current
 
         // --- SplitText + animation d'entrée du titre FEMTOGO puis du "welcome to" ---
@@ -168,52 +166,6 @@ export const LandingHero: React.FC = () => {
             .add(setupHoverAfterIntro)
         }
 
-        // Lecture de la vidéo synchronisée avec le scroll
-        const video = videoRef.current
-
-        if (!video || !videoSection) return
-
-        const timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: '.landing-video-wrapper',
-            start: 'top top',
-            end: '+=150%',
-            scrub: true,
-            pin: true,
-          },
-        })
-
-        const setupVideoAnimation = () => {
-          const duration = video.duration || 1
-          timeline.clear()
-          timeline
-            .fromTo(
-              videoSection,
-              { backgroundColor: '#FFF5EE' },
-              { backgroundColor: '#262626', duration: 0.5, ease: 'none' },
-              0
-            )
-            .fromTo(
-              video,
-              { opacity: 0 },
-              { opacity: 1, duration: 0.4, ease: 'power2.out' },
-              0.15
-            )
-            .to(
-              video,
-              {
-                currentTime: duration,
-                ease: 'none',
-              },
-              '>'
-            )
-        }
-
-        if (video.readyState >= 1 && !isNaN(video.duration)) {
-          setupVideoAnimation()
-        } else {
-          video.addEventListener('loadedmetadata', setupVideoAnimation, { once: true })
-        }
       }, rootRef)
 
       return () => {
@@ -226,7 +178,7 @@ export const LandingHero: React.FC = () => {
   return (
     <div
       ref={rootRef}
-      className="min-h-screen w-full bg-[#FFF5EE] text-black relative overflow-x-hidden"
+      className="min-h-screen w-full bg-[#FAFAFA] text-black relative overflow-x-hidden"
     >
       <div>
         {/* Section texte d’accueil façon affiche */}
@@ -269,23 +221,9 @@ export const LandingHero: React.FC = () => {
           </div>
         </section>
 
-        {/* Section vidéo contrôlée par le scroll */}
-        <section
-          ref={videoSectionRef}
-          className="h-[200vh] landing-video-wrapper"
-        >
-          <div className="sticky top-0 h-screen flex items-center justify-center">
-            <div className="relative w-full max-w-5xl flex items-center justify-center">
-              <video
-                ref={videoRef}
-                src="/videos/intro.webm"
-                className="h-auto"
-                muted
-                playsInline
-                preload="auto"
-              />
-            </div>
-          </div>
+        {/* Bouton press & hold */}
+        <section className="w-full flex items-center justify-center pb-20">
+          <PressHoldButton />
         </section>
       </div>
     </div>
