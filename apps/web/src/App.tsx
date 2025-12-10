@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { LoadingProvider, useLoading } from './providers/LoadingProvider'
 import { ActiveModelProvider, useActiveModel } from './state/ActiveModelContext'
 import { LoadingScreen } from './components/LoadingScreen'
@@ -50,9 +50,25 @@ const AppContent: React.FC = () => {
 
 // App wrapper avec tous les providers pour l'expérience 3D
 const App: React.FC = () => {
-  // Pour l'instant : page d'accueil vidéo + scroll.
-  // On gardera ensuite AppContent pour enchaîner vers la scène 3D.
-  return <LandingHero />
+  const [phase, setPhase] = useState<'intro' | 'main'>('intro')
+
+  if (phase === 'intro') {
+    return (
+      <LandingHero
+        onIntroFinished={() => {
+          setPhase('main')
+        }}
+      />
+    )
+  }
+
+  return (
+    <ActiveModelProvider>
+      <LoadingProvider>
+        <AppContent />
+      </LoadingProvider>
+    </ActiveModelProvider>
+  )
 }
 
 export default App

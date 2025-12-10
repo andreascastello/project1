@@ -1,8 +1,9 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import gsap from 'gsap'
 import { CustomEase, SplitText } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
 import PressHoldButton from './PressHoldButton'
+import IntroVideoTransition from './IntroVideoTransition'
 
 // Enregistrer les plugins nécessaires pour cette page
 gsap.registerPlugin(CustomEase, SplitText)
@@ -13,7 +14,11 @@ CustomEase.create(
   'M0,0 C0.71,0.505 0.192,0.726 0.318,0.852 0.45,0.984 0.504,1 1,1'
 )
 
-export const LandingHero: React.FC = () => {
+interface LandingHeroProps {
+  onIntroFinished?: () => void
+}
+
+export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
@@ -239,12 +244,30 @@ export const LandingHero: React.FC = () => {
 
           {/* Bouton press & hold en bas du hero */}
           <div className="hero-press-hold relative z-30 mb-10">
-            <PressHoldButton />
+            <PressHoldButton onComplete={() => {
+              // Quand le bouton est complètement rempli : lancer la transition vidéo
+              window.dispatchEvent(new CustomEvent('femtogo:intro-complete'))
+            }} />
           </div>
         </section>
       </div>
+      {/* Overlay de transition vidéo d'intro */}
+      <IntroVideoTransitionWrapper onFinished={onIntroFinished} />
     </div>
   )
 }
 
 export default LandingHero
+
+// Petit wrapper pour connecter l'événement global du bouton à la transition vidéo
+const IntroVideoTransitionWrapper: React.FC<{ onFinished?: () => void }> = ({ onFinished }) => {
+  const [active, setActive] = useState(false)
+
+  React.useEffect(() => {
+    const handler = () => setActive(true)
+    window.addEventListener('femtogo:intro-complete', handler)
+    return () => window.removeEventListener('femtogo:intro-complete', handler)
+  }, [])
+
+  return <IntroVideoTransition isActive={active} onComplete={onFinished} />
+}
