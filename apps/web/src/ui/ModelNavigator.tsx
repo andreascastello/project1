@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
-import { models, PORTAL_MODEL_NAME, TRANSITION_QUOTE } from '../constants'
+import { models, PORTAL_MODEL_NAME } from '../constants'
 
 export const ModelNavigator: React.FC = () => {
-  const { activeModelName, selectModelByName, discoveredNames, facet, setFacet, showTransition, hideTransition } = useActiveModel()
+  const { activeModelName, selectModelByName, discoveredNames, facet, setFacet } = useActiveModel()
   const allModels = useMemo(() => models, [])
   const allNames = useMemo(() => allModels.map(m => m.name), [allModels])
   const displayNames = useMemo(() => allNames.filter(n => n !== PORTAL_MODEL_NAME), [allNames])
@@ -153,9 +153,7 @@ export const ModelNavigator: React.FC = () => {
         <div style={{ position: 'fixed', bottom: 30, right: 30, zIndex: 11, pointerEvents: 'auto' }}>
           <button
             onClick={() => {
-              showTransition(TRANSITION_QUOTE)
-              window.setTimeout(() => setFacet('femtogo'), 300)
-              window.setTimeout(() => hideTransition(), 1200)
+              setFacet('femtogo')
             }}
             style={{
               background: 'rgba(0,0,0,0.6)',

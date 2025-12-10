@@ -19,7 +19,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
   const layerObjectsRef = useRef<THREE.Object3D[]>([])
   // La rotation par drag est gérée par OrbitControls côté scène
-  const { discoveredNames, facet, playInk, setFacet } = useActiveModel()
+  const { discoveredNames, facet, playInk } = useActiveModel()
   const isPortal = loadedModel.name === PORTAL_MODEL_NAME
   // Débloquer le portail uniquement quand TOUTES les 3D FEMTOGO (hors portail) sont découvertes
   const otherNames = useMemo(
@@ -136,13 +136,11 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
-    // Portail: lancer d'abord la vidéo d'encre, puis basculer sur la facette Baby
-    // un peu plus tard (au milieu de l'animation).
+    // Portail: lancer la vidéo d'encre.
+    // Le basculement vers la facette "baby" est maintenant synchronisé
+    // au milieu de l'animation directement dans InkTransitionOverlay.
     if (isPortal) {
       playInk()
-      window.setTimeout(() => {
-        setFacet('baby')
-      }, 700)
       return
     }
     // On peut cliquer pour sélectionner si aucun objet n'est actif
@@ -153,7 +151,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
       // Ne plus quitter/désélectionner en cliquant sur l'actif
     }
     // Si un autre objet est actif, on ne fait rien
-  }, [activeModelName, onSelect, loadedModel.name, isPortal, isPortalUnlocked, playInk, setFacet])
+  }, [activeModelName, onSelect, loadedModel.name, isPortal, isPortalUnlocked, playInk])
 
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation()

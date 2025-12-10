@@ -1,12 +1,23 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import { TRANSITION_QUOTE, TRANSITION_ARTIST_TITLE } from '../constants'
+
+const QUOTE_DISPLAY_SECONDS = 3.5
 
 export const InkTransitionOverlay: React.FC = () => {
-  const { inkVisible, stopInk } = useActiveModel()
+  const { inkVisible, stopInk, facet, setFacet } = useActiveModel()
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const midPauseHandleRef = useRef<gsap.core.Tween | null>(null)
+  const quoteHideHandleRef = useRef<gsap.core.Tween | null>(null)
+  const [showQuote, setShowQuote] = useState(false)
+  const facetRef = useRef(facet)
+
+  useEffect(() => {
+    facetRef.current = facet
+  }, [facet])
 
   useGSAP(
     () => {
@@ -15,20 +26,83 @@ export const InkTransitionOverlay: React.FC = () => {
       if (!container) return
 
       if (inkVisible) {
+        // Apparition de la couche d'encre
         gsap.fromTo(
           container,
           { opacity: 0 },
           { opacity: 1, duration: 0.35, ease: 'power2.out' }
         )
+
         if (video) {
           try {
             video.playbackRate = 4
             video.currentTime = 0
             video.play().catch(() => {})
+
+            const scheduleMidPauseAndQuote = () => {
+              if (!video.duration || Number.isNaN(video.duration)) return
+              const playbackRate = video.playbackRate || 1
+              const midDelay = (video.duration / 2) / playbackRate
+
+              if (midPauseHandleRef.current && typeof midPauseHandleRef.current.kill === 'function') {
+                midPauseHandleRef.current.kill()
+              }
+              if (quoteHideHandleRef.current && typeof quoteHideHandleRef.current.kill === 'function') {
+                quoteHideHandleRef.current.kill()
+              }
+
+              midPauseHandleRef.current = gsap.to({}, {
+                duration: midDelay,
+                onComplete: () => {
+                  try {
+                    video.pause()
+                  } catch {}
+
+                  // Changer de facette exactement au moment où la citation apparaît
+                  if (facetRef.current === 'femtogo') {
+                    setFacet('baby')
+                  }
+
+                  setShowQuote(true)
+
+                  quoteHideHandleRef.current = gsap.to({}, {
+                    duration: QUOTE_DISPLAY_SECONDS,
+                    onComplete: () => {
+                      setShowQuote(false)
+                      try {
+                        video.play().catch(() => {})
+                      } catch {}
+                    }
+                  })
+                }
+              })
+            }
+
+            if (video.readyState >= 1 && !Number.isNaN(video.duration)) {
+              scheduleMidPauseAndQuote()
+            } else {
+              const onLoaded = () => {
+                scheduleMidPauseAndQuote()
+              }
+              video.addEventListener('loadedmetadata', onLoaded, { once: true })
+            }
           } catch {}
         }
       } else {
+        // Disparition de la couche d'encre
         gsap.to(container, { opacity: 0, duration: 0.35, ease: 'power2.inOut' })
+
+        if (midPauseHandleRef.current && typeof midPauseHandleRef.current.kill === 'function') {
+          midPauseHandleRef.current.kill()
+          midPauseHandleRef.current = null
+        }
+        if (quoteHideHandleRef.current && typeof quoteHideHandleRef.current.kill === 'function') {
+          quoteHideHandleRef.current.kill()
+          quoteHideHandleRef.current = null
+        }
+
+        setShowQuote(false)
+
         if (video) {
           try { video.pause() } catch {}
           try { video.currentTime = 0 } catch {}
@@ -52,6 +126,34 @@ export const InkTransitionOverlay: React.FC = () => {
         opacity: 0,
       }}
     >
+      {showQuote && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              color: '#fff',
+              fontFamily: '"Beauty Swing Personal Use", serif',
+              textAlign: 'center',
+              padding: '0 24px',
+            }}
+          >
+            <div style={{ fontSize: 30, marginBottom: 14 }}>
+              “{TRANSITION_QUOTE}”
+            </div>
+            <div style={{ fontSize: 30 }}>
+              {TRANSITION_ARTIST_TITLE}
+            </div>
+          </div>
+        </div>
+      )}
       <video
         ref={videoRef}
         src="/videos/ink.webm"

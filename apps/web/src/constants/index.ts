@@ -6,6 +6,7 @@ export const PORTAL_MODEL_NAME = 'Faded Flower'
 
 // Citation utilisée pour certaines transitions de facette
 export const TRANSITION_QUOTE = "C'est juste un autre jour…"
+export const TRANSITION_ARTIST_TITLE = 'FEMTOGO - UN AUTRE JOUR'
 
 // Pile de fontes utilisée pour le marquee des albums
 export const ALBUM_MARQUEE_FONT_STACK =

@@ -18,9 +18,6 @@ interface ActiveModelContextType {
   setBgTransformOrigin: (p: { x: number, y: number } | null) => void
   selectModelByName: (name: string) => void
   setSelectModelByName: (fn: (name: string) => void) => void
-  transitionQuote: string | null
-  showTransition: (quote: string) => void
-  hideTransition: () => void
   // Transition vidéo encre (simple)
   inkVisible: boolean
   playInk: () => void
@@ -38,7 +35,6 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [facet, setFacet] = useState<'femtogo' | 'baby'>('femtogo')
   const [discoveredNames, setDiscoveredNames] = useState<string[]>([])
   const [bgTransformOrigin, setBgTransformOrigin] = useState<{ x: number, y: number } | null>(null)
-  const [transitionQuote, setTransitionQuote] = useState<string | null>(null)
   const [inkVisible, setInkVisible] = useState<boolean>(false)
   const selectRef = React.useRef<(name: string) => void>(() => {})
   const selectModelByName = useCallback((name: string) => {
@@ -49,12 +45,6 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [])
   const addDiscovered = useCallback((name: string) => {
     setDiscoveredNames((prev) => (prev.includes(name) ? prev : [...prev, name]))
-  }, [])
-  const showTransition = useCallback((quote: string) => {
-    setTransitionQuote(quote)
-  }, [])
-  const hideTransition = useCallback(() => {
-    setTransitionQuote(null)
   }, [])
 
   const playInk = useCallback(() => {
@@ -77,9 +67,6 @@ export const ActiveModelProvider: React.FC<{ children: ReactNode }> = ({ childre
     setBgTransformOrigin,
     selectModelByName,
     setSelectModelByName,
-    transitionQuote,
-    showTransition,
-    hideTransition,
     inkVisible,
     playInk,
     stopInk,
