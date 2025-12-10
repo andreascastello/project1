@@ -146,7 +146,7 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: '#AF0C08' }}
     >
       {/* Vidéo de fond, en transparence au-dessus du fond rouge */}
