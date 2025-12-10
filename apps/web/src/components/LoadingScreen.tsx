@@ -5,16 +5,25 @@ interface LoadingScreenProps {
   loadedCount: number
   totalModels: number
   error?: string | null
+  /** Contrôle la visibilité avec un fondu doux */
+  visible: boolean
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
   progress, 
   loadedCount, 
   totalModels, 
-  error 
+  error,
+  visible,
 }) => {
   return (
-    <div className="fixed inset-0 bg-fullBlack z-50 flex items-end justify-end p-6">
+    <div
+      className="fixed inset-0 bg-fullBlack z-50 flex items-end justify-end p-6 transition-opacity duration-700"
+      style={{
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? 'auto' : 'none',
+      }}
+    >
       {error ? (
         <div className="text-red-400 text-xs md:text-sm bg-fullBlack px-3 py-2 rounded">
           <div className="font-semibold mb-1">Erreur de chargement</div>

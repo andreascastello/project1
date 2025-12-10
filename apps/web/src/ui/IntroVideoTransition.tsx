@@ -38,38 +38,6 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
       // Vidéo centrale : plus petite, qui apparaîtra après un léger délai
       gsap.set(fgVideo, { autoAlpha: 0, scale: 0.5, transformOrigin: '50% 50%' })
 
-      const tl = gsap.timeline({
-        defaults: { ease: 'power2.out' },
-      })
-
-      tl.to(overlay, {
-        autoAlpha: 1,
-        duration: 0.8,
-        ease: 'power2.inOut',
-      })
-        .to(
-          bgVideo,
-          {
-            autoAlpha: 0.4,
-            duration: 0.8,
-          },
-          '<'
-        )
-        .to(
-          fgVideo,
-          {
-            autoAlpha: 1,
-            scale: 0.5,
-            duration: 0.9,
-            // Quand la petite vidéo est totalement apparue, on lance les deux lectures en même temps
-            onComplete: () => {
-              bgVideo.play().catch(() => {})
-              fgVideo.play().catch(() => {})
-            },
-          },
-          '+=0.5' // commence un peu après que le fond soit en place
-        )
-
       let finished = false
       let endTimeout: number | null = null
 
@@ -113,22 +81,62 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
         finishTransition()
       }
 
-      // Fallback : timer basé sur la durée réelle de la vidéo centrale
+      // Fallback : au cas où l'événement "ended" ne se déclenche pas,
+      // on termine légèrement après la durée théorique de la vidéo centrale,
+      // à partir du moment où la lecture est réellement lancée.
       const scheduleEndTimeout = () => {
         if (!fgVideo.duration || Number.isNaN(fgVideo.duration)) return
-        const remainingMs = (fgVideo.duration - fgVideo.currentTime) * 1000
-        if (remainingMs > 0) {
-          endTimeout = window.setTimeout(() => {
-            finishTransition()
-          }, remainingMs)
-        }
+        const totalMs = fgVideo.duration * 1000 + 200 // petit buffer après la fin
+        endTimeout = window.setTimeout(() => {
+          finishTransition()
+        }, totalMs)
       }
 
-      if (fgVideo.readyState >= 1 && !Number.isNaN(fgVideo.duration)) {
-        scheduleEndTimeout()
-      } else {
-        fgVideo.addEventListener('loadedmetadata', scheduleEndTimeout, { once: true })
-      }
+      const tl = gsap.timeline({
+        defaults: { ease: 'power2.out' },
+      })
+
+      tl.to(overlay, {
+        autoAlpha: 1,
+        duration: 0.8,
+        ease: 'power2.inOut',
+      })
+        .to(
+          bgVideo,
+          {
+            autoAlpha: 0.4,
+            duration: 0.8,
+          },
+          '<'
+        )
+        .to(
+          fgVideo,
+          {
+            autoAlpha: 1,
+            scale: 0.5,
+            duration: 0.9,
+            // Quand la petite vidéo est totalement apparue, on lance les deux lectures en même temps
+            onComplete: () => {
+              const startPlayback = () => {
+                bgVideo.play().catch(() => {})
+                fgVideo.play().catch(() => {})
+
+                if (fgVideo.duration && !Number.isNaN(fgVideo.duration)) {
+                  scheduleEndTimeout()
+                } else {
+                  const onMeta = () => {
+                    fgVideo.removeEventListener('loadedmetadata', onMeta)
+                    scheduleEndTimeout()
+                  }
+                  fgVideo.addEventListener('loadedmetadata', onMeta)
+                }
+              }
+
+              startPlayback()
+            },
+          },
+          '+=0.5' // commence un peu après que le fond soit en place
+        )
 
       fgVideo.addEventListener('ended', handleEnded)
       context.add(() => {

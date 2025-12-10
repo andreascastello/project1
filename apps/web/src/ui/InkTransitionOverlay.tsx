@@ -4,7 +4,8 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { TRANSITION_QUOTE, TRANSITION_ARTIST_TITLE } from '../constants'
 
-const QUOTE_DISPLAY_SECONDS = 3.5
+const QUOTE_DISPLAY_SECONDS = 2.5
+const MID_OFFSET_SECONDS = 0.21 // léger décalage après le milieu de la vidéo
 
 export const InkTransitionOverlay: React.FC = () => {
   const { inkVisible, stopInk, facet, setFacet } = useActiveModel()
@@ -13,6 +14,7 @@ export const InkTransitionOverlay: React.FC = () => {
   const midPauseHandleRef = useRef<gsap.core.Tween | null>(null)
   const quoteHideHandleRef = useRef<gsap.core.Tween | null>(null)
   const [showQuote, setShowQuote] = useState(false)
+  const quoteRef = useRef<HTMLDivElement | null>(null)
   const facetRef = useRef(facet)
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export const InkTransitionOverlay: React.FC = () => {
             const scheduleMidPauseAndQuote = () => {
               if (!video.duration || Number.isNaN(video.duration)) return
               const playbackRate = video.playbackRate || 1
-              const midDelay = (video.duration / 2) / playbackRate
+              const midDelay = (video.duration / 2 + MID_OFFSET_SECONDS) / playbackRate
 
               if (midPauseHandleRef.current && typeof midPauseHandleRef.current.kill === 'function') {
                 midPauseHandleRef.current.kill()
@@ -112,6 +114,36 @@ export const InkTransitionOverlay: React.FC = () => {
     { dependencies: [inkVisible], scope: containerRef }
   )
 
+  // Animation d'apparition / disparition de la citation
+  useGSAP(
+    () => {
+      const el = quoteRef.current
+      if (!el) return
+
+      if (showQuote) {
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, y: 24, scale: 0.96 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            ease: 'power3.out',
+          }
+        )
+      } else {
+        gsap.to(el, {
+          autoAlpha: 0,
+          y: -16,
+          duration: 0.45,
+          ease: 'power2.inOut',
+        })
+      }
+    },
+    { dependencies: [showQuote], scope: quoteRef }
+  )
+
   return (
     <div
       ref={containerRef}
@@ -134,10 +166,12 @@ export const InkTransitionOverlay: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: '#000000',
             pointerEvents: 'none',
           }}
         >
           <div
+            ref={quoteRef}
             style={{
               color: '#fff',
               fontFamily: '"Beauty Swing Personal Use", serif',

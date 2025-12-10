@@ -22,6 +22,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLDivElement | null>(null)
 
   useGSAP(
     () => {
@@ -46,10 +47,18 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
           const previewContainer = previewRef.current
           const currentHeroSection = heroRef.current
           const hoverTargets = femtoChars
+          const buttonEl = buttonRef.current
 
-          if (!previewContainer || !hoverTargets || hoverTargets.length === 0) return
+          if (!hoverTargets || hoverTargets.length === 0) return
+
+          // On peut vivre sans previewContainer (juste pas d'images),
+          // mais on a besoin du bouton pour l'unlock.
+          if (!buttonEl) return
 
           let activeClientsIndex = -1
+          let hoveredCount = 0
+          const visited = new Array(hoverTargets.length).fill(false)
+          let buttonShown = false
 
           hoverTargets.forEach((target, index) => {
             let activeClientImgWrapper: HTMLDivElement | null = null
@@ -68,54 +77,76 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
 
               activeClientsIndex = index
 
+              // Marquer la lettre comme visitée pour le déblocage du bouton
+              if (!visited[index]) {
+                visited[index] = true
+                hoveredCount += 1
+
+                if (hoveredCount === hoverTargets.length && !buttonShown) {
+                  buttonShown = true
+                  // Révéler le bouton press & hold une fois que toutes les lettres ont été survolées
+                  gsap.to(buttonEl, {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.9,
+                    ease: 'expo.out',
+                    onStart: () => {
+                      buttonEl.style.pointerEvents = 'auto'
+                    },
+                  })
+                }
+              }
+
               currentHeroSection?.classList.add('has-image')
 
-              const clientImgWrapper = document.createElement('div')
-              clientImgWrapper.className =
-                'hero-img-wrapper absolute inset-0 overflow-hidden will-change-[clip-path]'
+              if (previewContainer) {
+                const clientImgWrapper = document.createElement('div')
+                clientImgWrapper.className =
+                  'hero-img-wrapper absolute inset-0 overflow-hidden will-change-[clip-path]'
 
-              const clientImg = document.createElement('img')
+                const clientImg = document.createElement('img')
 
-              // Chaque target utilise une image basée sur son index (img1.jpeg, img2.jpeg, etc.)
-              clientImg.src = `/images/img${index + 1}.jpeg`
-              clientImg.alt = 'Preview'
-              // Remplir tout le cadre comme dans l'exemple de base
-              clientImg.style.width = '100%'
-              clientImg.style.height = '100%'
-              clientImg.style.objectFit = 'cover'
+                // Chaque target utilise une image basée sur son index (img1.jpeg, img2.jpeg, etc.)
+                clientImg.src = `/images/img${index + 1}.jpeg`
+                clientImg.alt = 'Preview'
+                // Remplir tout le cadre comme dans l'exemple de base
+                clientImg.style.width = '100%'
+                clientImg.style.height = '100%'
+                clientImg.style.objectFit = 'cover'
 
-              gsap.set(clientImg, { scale: 1.25, opacity: 0 })
+                gsap.set(clientImg, { scale: 1.25, opacity: 0 })
 
-              clientImgWrapper.appendChild(clientImg)
-              previewContainer.appendChild(clientImgWrapper)
+                clientImgWrapper.appendChild(clientImg)
+                previewContainer.appendChild(clientImgWrapper)
 
-              activeClientImgWrapper = clientImgWrapper
-              activeClientImg = clientImg
+                activeClientImgWrapper = clientImgWrapper
+                activeClientImg = clientImg
 
-              // État initial : même clip-path que dans ton CSS (tout fermé au centre)
-              gsap.set(clientImgWrapper, {
-                clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
-              })
+                // État initial : même clip-path que dans ton CSS (tout fermé au centre)
+                gsap.set(clientImgWrapper, {
+                  clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
+                })
 
-              // Ouverture du cadre
-              gsap.to(clientImgWrapper, {
-                clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-                duration: 0.5,
-                ease: 'hop',
-              })
+                // Ouverture du cadre
+                gsap.to(clientImgWrapper, {
+                  clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                  duration: 0.5,
+                  ease: 'hop',
+                })
 
-              // Apparition
-              gsap.to(clientImg, {
-                opacity: 1,
-                duration: 0.25,
-                ease: 'power2.out',
-              })
+                // Apparition
+                gsap.to(clientImg, {
+                  opacity: 1,
+                  duration: 0.25,
+                  ease: 'power2.out',
+                })
 
-              gsap.to(clientImg, {
-                scale: 1,
-                duration: 1.25,
-                ease: 'power2.out',
-              })
+                gsap.to(clientImg, {
+                  scale: 1,
+                  duration: 1.25,
+                  ease: 'power2.out',
+                })
+              }
             }
 
             const handleMouseOut = (event: Event) => {
@@ -152,7 +183,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
         }
 
         if (femtoChars.length > 0) {
-          // Timeline d'intro : FEMTOGO lettre par lettre, puis "welcome to" (plus rapide), puis le bouton
+          // Timeline d'intro : FEMTOGO lettre par lettre, puis "welcome to"
           const introTl = gsap.timeline()
 
           introTl
@@ -171,16 +202,6 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
                 ease: 'expo.out',
               },
               '-=1' // commence avant la fin complète de FEMTOGO pour apparaître plus vite
-            )
-            .from(
-              '.hero-press-hold',
-              {
-                y: 40,
-                opacity: 0,
-                duration: 0.9,
-                ease: 'expo.out',
-              },
-              '>-0.2' // apparaît juste après "Welcome to"
             )
             // À la fin de la timeline, on active le hover
             .add(setupHoverAfterIntro)
@@ -205,7 +226,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
         <section
           id="hero"
           ref={heroRef}
-          className="relative flex flex-col items-center justify-between h-screen px-6 text-black overflow-hidden"
+          className="relative flex flex-col items-center justify-center h-screen px-6 text-black overflow-hidden"
         >
           {/* Aperçu d'image centré, dimensionné comme dans le projet initial */}
           <div
@@ -242,8 +263,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
 
           </div>
 
-          {/* Bouton press & hold en bas du hero */}
-          <div className="hero-press-hold relative z-30 mb-10">
+          {/* Bouton press & hold en bas du hero, qui n'apparaît qu'après hover sur toutes les lettres */}
+          <div
+            ref={buttonRef}
+            className="hero-press-hold absolute bottom-1 left-1/2 -translate-x-1/2 z-30 opacity-0 pointer-events-none translate-y-4"
+          >
             <PressHoldButton onComplete={() => {
               // Quand le bouton est complètement rempli : lancer la transition vidéo
               window.dispatchEvent(new CustomEvent('femtogo:intro-complete'))

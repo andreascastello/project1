@@ -33,17 +33,15 @@ const AppContent: React.FC = () => {
       <SpotifyOverlay />
       <InkTransitionOverlay />
 
-      {/* Écran de loading en overlay pendant que les modèles 3D se chargent réellement */}
-      {(isLoading || error) && (
-        <div className="fixed inset-0 z-[9999]">
-          <LoadingScreen
-            progress={progress}
-            loadedCount={loadedCount}
-            totalModels={totalModels}
-            error={error}
-          />
-        </div>
-      )}
+      {/* Écran de loading en overlay pendant que les modèles 3D se chargent réellement,
+          avec un fondu doux à la disparition */}
+      <LoadingScreen
+        progress={progress}
+        loadedCount={loadedCount}
+        totalModels={totalModels}
+        error={error}
+        visible={isLoading || !!error}
+      />
     </div>
   )
 }
