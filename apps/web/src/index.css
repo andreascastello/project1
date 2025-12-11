@@ -32,6 +32,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Swantime Regular';
+  src: url('/fonts/SwantimeRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   --color-white: #FAFAFA;
@@ -112,6 +120,24 @@ body {
   will-change: transform, opacity;
   font-family: 'Tusker Grotesk 5800 Super', system-ui, sans-serif;
   letter-spacing: 0.01em;
+}
+
+/* Titre BABY HAYABUSA : rempli, mais interactif par mot */
+.baby-title {
+  font-family: 'Swantime Regular', system-ui, sans-serif;
+  color: #212122;
+  white-space: nowrap;
+}
+
+.has-image .baby-title {
+  color: #FAFAFA;
+  mix-blend-mode: difference;
+}
+
+.baby-title .hover-word {
+  pointer-events: auto;
+  display: inline-block;
+  will-change: transform, opacity;
 }
 
 /* Le wrapper d’image doit laisser passer la souris */

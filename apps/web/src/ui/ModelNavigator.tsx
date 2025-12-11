@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
 import { models, PORTAL_MODEL_NAME } from '../constants'
+import { PressHoldButton } from './PressHoldButton'
 
 export const ModelNavigator: React.FC = () => {
   const { activeModelName, selectModelByName, discoveredNames, facet, setFacet } = useActiveModel()
@@ -148,24 +149,28 @@ export const ModelNavigator: React.FC = () => {
           ))}
         </div>
       )}
-      {/* Bouton retour uniquement sur la page principale (pas en détail) */}
+      {/* Fin de parcours Baby Hayabusa :
+          une fois tous les modèles \"baby\" trouvés et aucun modèle actif,
+          on affiche un PressHoldButton qui enverra vers la landing Baby Hayabusa. */}
       {facet === 'baby' && babyFoundAll && !isActive && (
-        <div style={{ position: 'fixed', bottom: 30, right: 30, zIndex: 11, pointerEvents: 'auto' }}>
-          <button
-            onClick={() => {
-              setFacet('femtogo')
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 11,
+            pointerEvents: 'auto',
+          }}
+        >
+          <PressHoldButton
+            label="Press & hold to close"
+            enableShake={false}
+            variant="light"
+            onComplete={() => {
+              window.dispatchEvent(new CustomEvent('baby:return-to-landing'))
             }}
-            style={{
-              background: 'rgba(0,0,0,0.6)',
-              color: '#fff',
-              padding: '8px 12px',
-              borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.2)',
-              cursor: 'pointer'
-            }}
-          >
-            Back to FEMTOGO
-          </button>
+          />
         </div>
       )}
     </div>

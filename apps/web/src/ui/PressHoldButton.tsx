@@ -7,12 +7,18 @@ interface PressHoldButtonProps {
   durationMs?: number
   /** Callback déclenché une seule fois lorsque le remplissage atteint 100 % */
   onComplete?: () => void
+  /** Active ou non l'effet de tremblement global de la page */
+  enableShake?: boolean
+  /** Variante visuelle du bouton (noir par défaut, ou blanc) */
+  variant?: 'dark' | 'light'
 }
 
 export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
   label = 'Press & hold to start',
   durationMs = 1000,
   onComplete,
+  enableShake = true,
+  variant = 'dark',
 }) => {
   const [hasCompleted, setHasCompleted] = useState(false)
 
@@ -87,7 +93,9 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
       tweenRef.current = null
     }
 
-    startPageEffects()
+    if (enableShake) {
+      startPageEffects()
+    }
 
     if (!fillRef.current) return
 
@@ -99,11 +107,13 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
       onComplete: () => {
         tweenRef.current = null
         setHasCompleted(true)
-        stopPageEffects(true)
+        if (enableShake) {
+          stopPageEffects(true)
+        }
         if (onComplete) onComplete()
       },
     })
-  }, [durationMs, hasCompleted, onComplete, startPageEffects, stopPageEffects])
+  }, [durationMs, enableShake, hasCompleted, onComplete, startPageEffects, stopPageEffects])
 
   const endHold = useCallback(() => {
     if (hasCompleted) return
@@ -119,8 +129,10 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
         transformOrigin: '0% 50%',
       })
     }
-    stopPageEffects()
-  }, [hasCompleted, stopPageEffects])
+    if (enableShake) {
+      stopPageEffects()
+    }
+  }, [enableShake, hasCompleted, stopPageEffects])
 
   const handleHoverIn = useCallback(() => {
     if (!wrapperRef.current) return
@@ -161,7 +173,9 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
             src="/images/btn_heros.svg"
             alt=""
             aria-hidden="true"
-            className="h-auto w-auto pointer-events-none -mr-7"
+            className={`h-auto w-auto pointer-events-none -mr-7 ${
+              variant === 'light' ? 'invert' : ''
+            }`}
           />
 
           {/* Zone centrale masquée par le SVG */}
@@ -169,7 +183,7 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
             <div className="absolute inset-0 press-hold-mask z-0 overflow-hidden">
               <div
                 ref={fillRef}
-                className="h-full w-full bg-black"
+                className={`h-full w-full ${variant === 'light' ? 'bg-white' : 'bg-black'}`}
                 style={{ transform: 'scaleX(0)', transformOrigin: '0% 50%' }}
               />
             </div>
@@ -180,14 +194,24 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
             src="/images/btn_heros.svg"
             alt=""
             aria-hidden="true"
-            className="h-auto w-auto pointer-events-none -scale-x-100 -ml-7"
+            className={`h-auto w-auto pointer-events-none -scale-x-100 -ml-7 ${
+              variant === 'light' ? 'invert' : ''
+            }`}
           />
         </div>
 
         {/* Capsule texte au-dessus, qui ne scale pas (hors wrapperRef) */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="px-2 py-3 bg-black flex items-center justify-center scale-60">
-            <span className="text-white text-[12px] tracking-[0.12em] uppercase font-[Tusker Grotesk 5800 Super]">
+          <div
+            className={`px-2 py-3 flex items-center justify-center scale-60 ${
+              variant === 'light' ? 'bg-white' : 'bg-black'
+            }`}
+          >
+            <span
+              className={`text-[12px] tracking-[0.12em] uppercase font-[Tusker Grotesk 5800 Super] ${
+                variant === 'light' ? 'text-black' : 'text-white'
+              }`}
+            >
               {label}
             </span>
           </div>
