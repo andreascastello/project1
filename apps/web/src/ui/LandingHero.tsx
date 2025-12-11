@@ -235,7 +235,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onIntroFinished }) => 
           />
 
           {/* Bloc central : titres */}
-          <div className="relative w-full flex flex-col items-center justify-center flex-1">
+          <div className="relative w-full flex flex-col items-center justify-center flex-1" data-mouse-hint="Try to hover">
             {/* Conteneur commun pour aligner les largeurs */}
             <div className="relative w-full max-w-5xl">
               {/* Gros FEMTOGO en arrière-plan, split par SplitText, uniquement en contour */}

@@ -174,6 +174,7 @@ export const BabyLandingHero: React.FC = () => {
     <div
       ref={rootRef}
       className="min-h-screen w-full bg-[#FAFAFA] text-black relative overflow-x-hidden"
+      data-mouse-hint="Try to hover"
     >
       <section
         ref={heroRef}

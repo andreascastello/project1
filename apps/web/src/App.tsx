@@ -9,6 +9,7 @@ import { ModelNavigator } from './ui/ModelNavigator'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SpotifyOverlay } from './ui/SpotifyOverlay'
 import { InkTransitionOverlay } from './ui/InkTransitionOverlay'
+import { MouseHintOverlay } from './ui/MouseHintOverlay'
 import { LandingHero } from './ui/LandingHero'
 import { BabyLandingHero } from './ui/BabyLandingHero'
 import './App.css'
@@ -120,6 +121,8 @@ const App: React.FC = () => {
   return (
     <>
       {content}
+      {/* Overlay global pour les hints souris (actif sur toutes les phases) */}
+      <MouseHintOverlay />
       <WhiteFadeOverlay active={babyFadeActive} />
     </>
   )

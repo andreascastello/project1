@@ -164,7 +164,7 @@ export const ModelNavigator: React.FC = () => {
           }}
         >
           <PressHoldButton
-            label="Press & hold to close"
+            label="Press & hold to continue"
             enableShake={false}
             variant="light"
             onComplete={() => {
