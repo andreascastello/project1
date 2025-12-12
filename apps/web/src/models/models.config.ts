@@ -134,7 +134,7 @@ export const models: ModelConfig[] = [
     scale: 3,
     layer: 'foreground',
     exposure: 1,
-    albumTitle: 'DEADLY POISON STING',
+    albumTitle: 'Deadly Poison Sting',
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/4ZBG4lOW57ekJjHjXGxxMU',
   },
@@ -147,7 +147,7 @@ export const models: ModelConfig[] = [
     scale: 0.6,
     layer: 'midground',
     exposure: 1.2,
-    albumTitle: 'FADED FLOWER STORY',
+    albumTitle: 'Faded Flower Story',
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/7sd67KZ95ZyI3haXg0OiqB',
   }

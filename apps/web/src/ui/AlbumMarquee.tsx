@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useLayoutEffect, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
-import { models, ALBUM_MARQUEE_FONT_STACK } from '../constants'
+import { models } from '../constants'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 
@@ -24,16 +24,22 @@ function useMeasureWidth(text: string, gapPx: number, fontPx: number, letterSpac
 }
 
 export const AlbumMarquee: React.FC = () => {
-  const { activeModelName } = useActiveModel()
+  const { activeModelName, facet } = useActiveModel()
   const model = useMemo(
     () => models.find(m => m.name === activeModelName) ?? null,
     [activeModelName]
   )
 
+  // Police différente en mode baby : Young Morin
+  const isBabyFacet = facet === 'baby'
+  const fontFamilyStack = isBabyFacet ? `'Young Morin', system-ui, sans-serif` : `'SerpentCresh', 'Tusker Grotesk 5800 Super', 'Tusker Grotesk', 'Impact', 'Arial Black', system-ui, sans-serif`
+
   const gapPx = 55
-  const fontPx = 120
+  const fontPx = isBabyFacet ? 100 : 120
   const letterSpacingEm = 0
-  const text = (model?.albumTitle ?? '').toUpperCase()
+  const baseTitle = model?.albumTitle ?? ''
+  // En mode FEMTOGO on reste en majuscules, en mode baby on garde la casse d'origine
+  const text = isBabyFacet ? baseTitle : baseTitle.toUpperCase()
   const speedSec = model?.marqueeSpeedSec ?? 30
 
   const { ref: measureRef, width: unitWidth } = useMeasureWidth(
@@ -97,7 +103,7 @@ export const AlbumMarquee: React.FC = () => {
         <div
           ref={measureRef}
           style={{
-            fontFamily: ALBUM_MARQUEE_FONT_STACK,
+            fontFamily: fontFamilyStack,
             fontSize: `${fontPx}px`,
             letterSpacing: `${letterSpacingEm}em`,
             whiteSpace: 'nowrap',
@@ -122,7 +128,7 @@ export const AlbumMarquee: React.FC = () => {
         <div
           style={{
             width: '100%',
-            overflowX: 'hidden',
+            overflowX: 'visible',
             overflowY: 'visible',
             paddingTop: '10%',
             paddingBottom: '8px',
@@ -150,11 +156,11 @@ export const AlbumMarquee: React.FC = () => {
                   className="marquee-title"
                   key={`a-${i}`}
                   style={{
-                    fontFamily: ALBUM_MARQUEE_FONT_STACK,
+                    fontFamily: fontFamilyStack,
                     fontSize: `${fontPx}px`,
                     letterSpacing: `${letterSpacingEm}em`,
                     lineHeight: 1.12,
-                    color: '#C6C6C5',
+                    color: isBabyFacet ? '#FAFAFA' : '#C6C6C5',
                   }}
                 >
                   {text}
@@ -174,11 +180,11 @@ export const AlbumMarquee: React.FC = () => {
                 <span
                   key={`b-${i}`}
                   style={{
-                    fontFamily: ALBUM_MARQUEE_FONT_STACK,
+                    fontFamily: fontFamilyStack,
                     fontSize: `${fontPx}px`,
                     letterSpacing: `${letterSpacingEm}em`,
                     lineHeight: 1.12,
-                    color: '#C6C6C5',
+                    color: isBabyFacet ? '#FAFAFA' : '#C6C6C5',
                   }}
                 >
                   {text}

@@ -8,10 +8,6 @@ export const PORTAL_MODEL_NAME = 'Faded Flower'
 export const TRANSITION_QUOTE = "C'est juste un autre jour…"
 export const TRANSITION_ARTIST_TITLE = 'FEMTOGO - UN AUTRE JOUR'
 
-// Pile de fontes utilisée pour le marquee des albums
-export const ALBUM_MARQUEE_FONT_STACK =
-  `'SerpentCresh', 'Tusker Grotesk 5800 Super', 'Tusker Grotesk', 'Impact', 'Arial Black', system-ui, sans-serif`
-
 // Re-export proprement typé des modèles 3D
 export const models: ModelConfig[] = rawModels
 export type { ModelConfig }

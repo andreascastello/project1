@@ -160,7 +160,9 @@ export const ModelNavigator: React.FC = () => {
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 11,
-            pointerEvents: 'auto',
+            // Laisse passer les clics vers la scène, sauf sur les éléments
+            // internes qui réactivent explicitement pointer-events (le vrai bouton).
+            pointerEvents: 'none',
           }}
         >
           <PressHoldButton

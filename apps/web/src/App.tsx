@@ -107,11 +107,11 @@ const App: React.FC = () => {
     content = <BabyLandingHero />
   } else {
     content = (
-      <ActiveModelProvider>
-        <LoadingProvider>
-          <AppContent />
-        </LoadingProvider>
-      </ActiveModelProvider>
+    <ActiveModelProvider>
+      <LoadingProvider>
+        <AppContent />
+      </LoadingProvider>
+    </ActiveModelProvider>
     )
   }
 

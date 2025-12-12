@@ -153,22 +153,15 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
   }, [])
 
   return (
-    <div className="flex items-center justify-center select-none">
-      <button
-        type="button"
-        className="relative flex items-center justify-center outline-none"
-        onPointerDown={startHold}
-        onPointerUp={endHold}
-        onPointerLeave={endHold}
-        onMouseEnter={handleHoverIn}
-        onMouseLeave={handleHoverOut}
-      >
-        {/* Groupe décor + masque qui scale avec GSAP */}
+    // Conteneur extérieur ne bloque jamais les clics sur la scène 3D
+    <div className="flex items-center justify-center select-none pointer-events-none">
+      <div className="relative flex items-center justify-center">
+        {/* Groupe global (décors + zone centrale) qui scale avec GSAP */}
         <div
           ref={wrapperRef}
-          className="flex items-center justify-center gap-0 origin-center"
+          className="flex items-center justify-center gap-0 origin-center pointer-events-none"
         >
-          {/* Décor gauche */}
+          {/* Décor gauche (non cliquable) */}
           <img
             src="/images/btn_heros.svg"
             alt=""
@@ -178,18 +171,29 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
             }`}
           />
 
-          {/* Zone centrale masquée par le SVG */}
-          <div className="relative w-[356px] h-[124px] flex items-center justify-center">
-            <div className="absolute inset-0 press-hold-mask z-0 overflow-hidden">
-              <div
-                ref={fillRef}
-                className={`h-full w-full ${variant === 'light' ? 'bg-white' : 'bg-black'}`}
-                style={{ transform: 'scaleX(0)', transformOrigin: '0% 50%' }}
-              />
+          {/* Bouton central uniquement sur la zone masquée (seule zone cliquable) */}
+          <button
+            type="button"
+            className="relative flex items-center justify-center outline-none pointer-events-auto"
+            onPointerDown={startHold}
+            onPointerUp={endHold}
+            onPointerLeave={endHold}
+            onMouseEnter={handleHoverIn}
+            onMouseLeave={handleHoverOut}
+          >
+            {/* Zone centrale masquée par le SVG */}
+            <div className="relative w-[356px] h-[124px] flex items-center justify-center">
+              <div className="absolute inset-0 press-hold-mask z-0 overflow-hidden">
+                <div
+                  ref={fillRef}
+                  className={`h-full w-full ${variant === 'light' ? 'bg-white' : 'bg-black'}`}
+                  style={{ transform: 'scaleX(0)', transformOrigin: '0% 50%' }}
+                />
+              </div>
             </div>
-          </div>
+          </button>
 
-          {/* Décor droit (inversé horizontalement) */}
+          {/* Décor droit (non cliquable, inversé horizontalement) */}
           <img
             src="/images/btn_heros.svg"
             alt=""
@@ -200,7 +204,7 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
           />
         </div>
 
-        {/* Capsule texte au-dessus, qui ne scale pas (hors wrapperRef) */}
+        {/* Capsule texte indépendante, qui ne scale pas (hors wrapperRef) */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             className={`px-2 py-3 flex items-center justify-center scale-60 ${
@@ -216,7 +220,7 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
             </span>
           </div>
         </div>
-      </button>
+      </div>
     </div>
   )
 }
