@@ -62,7 +62,17 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 export const useLoading = (): LoadingContextType => {
   const context = useContext(LoadingContext)
   if (context === undefined) {
-    throw new Error('useLoading doit être utilisé dans un LoadingProvider')
+    // Fallback sécurisé pour éviter les crashs sporadiques (HMR, rendu hors provider, etc.)
+    // On considère simplement que rien n'est en cours de chargement.
+    return {
+      isLoading: false,
+      progress: 100,
+      loadedCount: models.length,
+      totalModels: models.length,
+      error: null,
+      setLoaded: () => {},
+      setError: () => {},
+    }
   }
   return context
 }

@@ -111,6 +111,19 @@ export const models: ModelConfig[] = [
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/6EvcYoFlmSH1VZaFNyOFlG',
   },
+  {
+    name: "Pretty Dollcorpse",
+    facet: 'femtogo',
+    path: '/3D/pretty.glb',
+    position: [5, -7, 1],
+    rotation: [0, 0, 0],
+    scale: 0.6,
+    layer: 'midground',
+    exposure: 1.2,
+    albumTitle: 'PRETTY DOLLCORPSE',
+    marqueeSpeedSec: 30,
+    spotifyEmbedUrl: 'https://open.spotify.com/embed/album/1dlpzZkPW3GxLgcuKMvsS2',
+  },
   // Baby facet (en couleur)
   {
     name: "Deadly Poison Sting",
@@ -137,7 +150,7 @@ export const models: ModelConfig[] = [
     albumTitle: 'FADED FLOWER STORY',
     marqueeSpeedSec: 30,
     spotifyEmbedUrl: 'https://open.spotify.com/embed/album/7sd67KZ95ZyI3haXg0OiqB',
-  },
+  }
 ]
 
 

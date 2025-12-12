@@ -123,8 +123,9 @@ export const InkTransitionOverlay: React.FC = () => {
       if (showQuote) {
         gsap.fromTo(
           el,
-          { autoAlpha: 0 },
+          { autoAlpha: 0, x: 50},
           {
+            x: 0,
             autoAlpha: 1,
             duration: 0.7,
             ease: 'power2.out',
@@ -133,7 +134,7 @@ export const InkTransitionOverlay: React.FC = () => {
       } else {
         gsap.to(el, {
           autoAlpha: 0,
-          duration: 0.45,
+          duration: 0.7,
           ease: 'power2.inOut',
         })
       }

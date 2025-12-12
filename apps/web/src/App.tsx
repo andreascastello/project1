@@ -16,7 +16,7 @@ import './App.css'
 
 // Composant principal de l'application actuelle (expérience 3D)
 const AppContent: React.FC = () => {
-  const { isLoading, progress, loadedCount, totalModels, error } = useLoading()
+  const { isLoading, error } = useLoading()
   const { activeModelName } = useActiveModel()
 
   return (
@@ -38,9 +38,6 @@ const AppContent: React.FC = () => {
       {/* Écran de loading en overlay pendant que les modèles 3D se chargent réellement,
           avec un fondu doux à la disparition */}
       <LoadingScreen
-        progress={progress}
-        loadedCount={loadedCount}
-        totalModels={totalModels}
         error={error}
         visible={isLoading || !!error}
       />

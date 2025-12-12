@@ -1,28 +1,22 @@
 import React from 'react'
 
 interface LoadingScreenProps {
-  progress: number
-  loadedCount: number
-  totalModels: number
   error?: string | null
   /** Contrôle la visibilité avec un fondu doux */
   visible: boolean
 }
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
-  progress, 
-  loadedCount, 
-  totalModels, 
-  error,
-  visible,
-}) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ error, visible }) => {
   return (
     <div
-      className="fixed inset-0 bg-fullBlack z-50 flex items-end justify-end p-6 transition-opacity duration-700"
+      className="fixed inset-0 bg-fullBlack z-50 flex items-end justify-end p-6 transition-opacity"
       style={{
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? 'auto' : 'none',
+        // Fade plus lent pour que le message reste visible un peu plus longtemps
+        transition: 'opacity 1.2s ease-in-out',
       }}
+      data-mouse-hint="Loading scene"
     >
       {error ? (
         <div className="text-red-400 text-xs md:text-sm bg-fullBlack px-3 py-2 rounded">
@@ -30,11 +24,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           <p className="opacity-80">{error}</p>
         </div>
       ) : (
-        <div className="flex items-center gap-3 text-white/70">
+        <div className="flex items-center text-white/70">
+          {/* Simple spinner, le texte n'est visible que via MouseHintOverlay */}
           <div className="h-6 w-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-          <span className="text-xs md:text-sm tracking-[0.2em] uppercase">
-            Loading {loadedCount}/{totalModels}
-          </span>
         </div>
       )}
     </div>

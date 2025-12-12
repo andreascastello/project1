@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useActiveModel } from '../state/ActiveModelContext'
-const defaultBg = '/images/femtogo.png'
-const babyBg = '/images/baby_hayabusa.jpeg'
+const defaultBg = '/images/femtogo.webp'
+const babyBg = '/images/baby_hayabusa.webp'
 
 interface CSSBackgroundProps {
   backgroundImage?: string
