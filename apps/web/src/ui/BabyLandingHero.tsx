@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import gsap from 'gsap'
 import { CustomEase, SplitText } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
+import PressHoldButton from './PressHoldButton'
 
 // Plugins GSAP nécessaires pour cette page
 gsap.registerPlugin(CustomEase, SplitText)
@@ -16,6 +17,7 @@ export const BabyLandingHero: React.FC = () => {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLDivElement | null>(null)
 
   useGSAP(
     () => {
@@ -45,10 +47,14 @@ export const BabyLandingHero: React.FC = () => {
 
           const previewContainer = previewRef.current
           const currentHeroSection = heroSection
+          const buttonEl = buttonRef.current
 
           if (!words || words.length === 0 || !previewContainer) return
 
           let activeIndex = -1
+          let hoveredCount = 0
+          const visited = new Array(words.length).fill(false)
+          let buttonShown = false
 
           words.forEach((target, index) => {
             let activeWrapper: HTMLDivElement | null = null
@@ -66,6 +72,25 @@ export const BabyLandingHero: React.FC = () => {
 
               activeIndex = index
               currentHeroSection?.classList.add('has-image')
+
+              // Marquer le mot comme visité, et révéler le bouton une fois tous visités
+              if (!visited[index]) {
+                visited[index] = true
+                hoveredCount += 1
+
+                if (hoveredCount === words.length && !buttonShown && buttonEl) {
+                  buttonShown = true
+                  gsap.to(buttonEl, {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.9,
+                    ease: 'expo.out',
+                    onStart: () => {
+                      buttonEl.style.pointerEvents = 'auto'
+                    },
+                  })
+                }
+              }
 
               const wrapper = document.createElement('div')
               wrapper.className =
@@ -194,6 +219,22 @@ export const BabyLandingHero: React.FC = () => {
           >
             Baby Hayabusa
           </h1>
+        </div>
+
+        {/* Bouton press & hold en bas, qui n'apparaît qu'après hover sur les mots */}
+        <div
+          ref={buttonRef}
+          className="hero-press-hold absolute bottom-8 left-1/2 -translate-x-1/2 z-30 opacity-0 pointer-events-none translate-y-4"
+        >
+          <PressHoldButton
+            label="Press & hold to end"
+            enableShake={false}
+            variant="dark"
+            onComplete={() => {
+              // Déclencher la transition blanche vers la page de remerciements
+              window.dispatchEvent(new CustomEvent('thanks:outro-complete'))
+            }}
+          />
         </div>
       </section>
     </div>

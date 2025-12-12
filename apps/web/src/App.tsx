@@ -12,6 +12,7 @@ import { InkTransitionOverlay } from './ui/InkTransitionOverlay'
 import { MouseHintOverlay } from './ui/MouseHintOverlay'
 import { LandingHero } from './ui/LandingHero'
 import { BabyLandingHero } from './ui/BabyLandingHero'
+import { ThanksPage } from './ui/ThanksPage'
 import './App.css'
 
 // Composant principal de l'application actuelle (expérience 3D)
@@ -64,8 +65,9 @@ const WhiteFadeOverlay: React.FC<{ active: boolean }> = ({ active }) => {
 
 // App wrapper avec tous les providers pour l'expérience 3D
 const App: React.FC = () => {
-  const [phase, setPhase] = useState<'intro' | 'main' | 'babyLanding'>('intro')
+  const [phase, setPhase] = useState<'intro' | 'main' | 'babyLanding' | 'thanks'>('intro')
   const [babyFadeActive, setBabyFadeActive] = useState(false)
+  const [thanksFadeActive, setThanksFadeActive] = useState(false)
 
   // Écoute globale : quand le PressHoldButton de fin Baby Hayabusa est complété,
   // on lance un fade blanc puis on passe sur la landing Baby.
@@ -93,6 +95,30 @@ const App: React.FC = () => {
     return () => window.removeEventListener('baby:return-to-landing', handler)
   }, [])
 
+  // Écoute globale : quand le PressHoldButton de fin de parcours Baby est complété,
+  // on lance un fade blanc puis on passe sur la page de remerciements.
+  useEffect(() => {
+    const handler = () => {
+      setThanksFadeActive(true)
+
+      const toThanks = setTimeout(() => {
+        setPhase('thanks')
+      }, 600)
+
+      const clearFade = setTimeout(() => {
+        setThanksFadeActive(false)
+      }, 1200)
+
+      return () => {
+        clearTimeout(toThanks)
+        clearTimeout(clearFade)
+      }
+    }
+
+    window.addEventListener('thanks:outro-complete', handler)
+    return () => window.removeEventListener('thanks:outro-complete', handler)
+  }, [])
+
   let content: React.ReactNode
 
   if (phase === 'intro') {
@@ -105,6 +131,8 @@ const App: React.FC = () => {
     )
   } else if (phase === 'babyLanding') {
     content = <BabyLandingHero />
+  } else if (phase === 'thanks') {
+    content = <ThanksPage />
   } else {
     content = (
     <ActiveModelProvider>
@@ -120,7 +148,7 @@ const App: React.FC = () => {
       {content}
       {/* Overlay global pour les hints souris (actif sur toutes les phases) */}
       <MouseHintOverlay />
-      <WhiteFadeOverlay active={babyFadeActive} />
+      <WhiteFadeOverlay active={babyFadeActive || thanksFadeActive} />
     </>
   )
 }

@@ -120,21 +120,26 @@ export const InkTransitionOverlay: React.FC = () => {
       const el = quoteRef.current
       if (!el) return
 
+      // On s'assure qu'aucun tween précédent ne vient interférer
+      gsap.killTweensOf(el)
+
       if (showQuote) {
         gsap.fromTo(
           el,
-          { autoAlpha: 0, x: 50},
+          { opacity: 0, x: 50 },
           {
+            opacity: 1,
             x: 0,
-            autoAlpha: 1,
             duration: 0.7,
             ease: 'power2.out',
           }
         )
       } else {
         gsap.to(el, {
-          autoAlpha: 0,
-          duration: 0.7,
+          // Le texte glisse vers la gauche en disparaissant
+          x: -100,
+          opacity: 0,
+          duration: 0.8,
           ease: 'power2.inOut',
         })
       }

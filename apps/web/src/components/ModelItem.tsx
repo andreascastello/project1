@@ -23,13 +23,13 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const isPortal = loadedModel.name === PORTAL_MODEL_NAME
   // Débloquer le portail uniquement quand TOUTES les 3D FEMTOGO (hors portail) sont découvertes
   const otherNames = useMemo(
-    () => models
-      .filter(m => (m.facet ?? 'femtogo') === 'femtogo' && m.name !== PORTAL_MODEL_NAME)
-      .map(m => m.name),
+    () =>
+      models
+        .filter((m) => (m.facet ?? 'femtogo') === 'femtogo' && m.name !== PORTAL_MODEL_NAME)
+        .map((m) => m.name),
     []
   )
-  // Pour faciliter les tests: rendre le portail toujours cliquable
-  const isPortalUnlocked = isPortal ? true : otherNames.every(n => discoveredNames.includes(n))
+  const isPortalUnlocked = otherNames.every((n) => discoveredNames.includes(n))
 
   // Enregistrer le groupe réellement rendu pour le calcul de focus/centre
   useEffect(() => {
@@ -42,14 +42,27 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   }, [loadedModel.name])
 
   useEffect(() => {
-    // En facet "baby": forcer layer 2 (couleur), sinon logique normale
-    const targetLayer = facet === 'baby' ? 2 : (isPortalUnlocked ? 2 : (isActive ? 2 : 1))
+    // Gestion des layers pour le dual-pass renderer :
+    // - Facette baby : tout en couleur (layer 2)
+    // - Facette femtogo :
+    //   - Portail Faded Flower : layer 2 uniquement une fois débloqué, sinon layer 1
+    //   - Autres modèles : layer 2 uniquement lorsqu'ils sont actifs, sinon layer 1
+    let targetLayer = 1
+
+    if (facet === 'baby') {
+      targetLayer = 2
+    } else if (isPortal) {
+      targetLayer = isPortalUnlocked ? 2 : 1
+    } else {
+      targetLayer = isActive ? 2 : 1
+    }
+
     for (const obj of layerObjectsRef.current) {
       if (obj && (obj as any).layers && typeof (obj as any).layers.set === 'function') {
         obj.layers.set(targetLayer)
       }
     }
-  }, [isActive, isPortalUnlocked, facet])
+  }, [facet, isActive, isPortal, isPortalUnlocked])
 
   // Mémoïser le clone pour éviter de le recréer à chaque render
   const clonedScene = useMemo(() => {
@@ -140,6 +153,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     // Le basculement vers la facette "baby" est maintenant synchronisé
     // au milieu de l'animation directement dans InkTransitionOverlay.
     if (isPortal) {
+      if (!isPortalUnlocked) return
       playInk()
       return
     }
@@ -156,10 +170,10 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation()
     // Quand un modèle est actif, on ne rend rien "cliquable"
-    const canInteract = !activeModelName && (!isPortal || true)
+    const canInteract = !activeModelName && (!isPortal || isPortalUnlocked)
     if (!canInteract) return
     document.body.style.cursor = 'pointer'
-  }, [activeModelName, loadedModel.name, isPortal, isPortalUnlocked])
+  }, [activeModelName, isPortal, isPortalUnlocked])
 
   const handlePointerOut = useCallback(() => {
     document.body.style.cursor = 'default'
