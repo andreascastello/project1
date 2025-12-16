@@ -7,10 +7,9 @@ import { useLoading } from '../providers/LoadingProvider'
 interface ModelCollectionProps {
   activeModelName: string | null
   onSelect: (name: string) => void
-  colorMode?: boolean
 }
 
-export const ModelCollection: React.FC<ModelCollectionProps> = ({ activeModelName, onSelect, colorMode = false }) => {
+export const ModelCollection: React.FC<ModelCollectionProps> = ({ activeModelName, onSelect }) => {
   const loadedModels = useStableModelCache()
   const { facet } = useActiveModel()
   const { setLoaded } = useLoading()

@@ -34,19 +34,6 @@ export const PressHoldButton: React.FC<PressHoldButtonProps> = ({
     }
   }, [])
 
-  const resetFill = useCallback(() => {
-    if (tweenRef.current) {
-      tweenRef.current.kill()
-      tweenRef.current = null
-    }
-    if (fillRef.current) {
-      gsap.set(fillRef.current, {
-        scaleX: 0,
-        transformOrigin: '0% 50%', // gauche → droite
-      })
-    }
-  }, [])
-
   const startPageEffects = useCallback(() => {
     const rootEl = document.getElementById('root')
     if (!rootEl) return

@@ -4,7 +4,7 @@ import { models, PORTAL_MODEL_NAME } from '../constants'
 import { PressHoldButton } from './PressHoldButton'
 
 export const ModelNavigator: React.FC = () => {
-  const { activeModelName, selectModelByName, discoveredNames, facet, setFacet } = useActiveModel()
+  const { activeModelName, selectModelByName, discoveredNames, facet } = useActiveModel()
   const allModels = useMemo(() => models, [])
   const allNames = useMemo(() => allModels.map(m => m.name), [allModels])
   const displayNames = useMemo(() => allNames.filter(n => n !== PORTAL_MODEL_NAME), [allNames])

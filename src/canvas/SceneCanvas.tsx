@@ -26,37 +26,6 @@ function computeFocusFromObject(root: THREE.Object3D) {
   return { center, distance }
 }
 
-// ndcX/ndcY dans [-1..1] : (-0.5,-0.5) = centre du quadrant bas-gauche
-function computeFramedCameraPosition(
-  camera: THREE.PerspectiveCamera | null,
-  center: THREE.Vector3,
-  distance: number,
-  ndcX: number, // -1..1 (gauche..droite)
-  ndcY: number  // -1..1 (bas..haut)
-) {
-  if (!camera) {
-    // Fallback simple: placer la caméra face à l'objet sans décalage
-    return new THREE.Vector3(center.x, center.y, center.z + distance)
-  }
-
-  const aspect = camera.aspect || (window.innerWidth / window.innerHeight)
-  const fov = THREE.MathUtils.degToRad(camera.fov)
-  const visibleHeight = 2 * Math.tan(fov / 2) * distance
-  const visibleWidth = visibleHeight * aspect
-
-  // Décalage en unités monde à cette distance.
-  // Signe choisi pour que ndc négatif => on pousse la caméra à droite/haut
-  // -> l'objet apparait à gauche/bas à l'écran.
-  const offsetX = -ndcX * (visibleWidth / 2)   // +X caméra = droite écran
-  const offsetY = -ndcY * (visibleHeight / 2)  // +Y caméra = haut écran
-
-  // On part d'une position "en face" (axe Z), puis on décale en X/Y monde (caméra sans roll).
-  const pos = new THREE.Vector3(center.x, center.y, center.z + distance)
-  pos.x += offsetX
-  pos.y += offsetY
-  return pos
-}
-
 // Dual pass renderer: layer 1 (inactive) in grayscale, layer 2 (active) in color overlaid.
 // When a model is active, we freeze the camera transform for pass 1 so the background appears static
 // while OrbitControls move the live camera for the active object.

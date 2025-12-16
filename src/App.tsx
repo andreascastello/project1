@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { LoadingProvider, useLoading } from './providers/LoadingProvider'
-import { ActiveModelProvider, useActiveModel } from './state/ActiveModelContext'
+import { ActiveModelProvider } from './state/ActiveModelContext'
 import { LoadingScreen } from './components/LoadingScreen'
 import { SceneCanvas } from './canvas/SceneCanvas'
 import { CSSBackground } from './components/CSSBackground'
@@ -18,7 +18,6 @@ import './App.css'
 // Composant principal de l'application actuelle (expérience 3D)
 const AppContent: React.FC = () => {
   const { isLoading, error } = useLoading()
-  const { activeModelName } = useActiveModel()
 
   return (
     <div className="w-full h-screen relative overflow-hidden bg-black">

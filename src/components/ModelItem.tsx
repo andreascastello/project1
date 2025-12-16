@@ -145,8 +145,6 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     }
   }, [loadedModel.name, loadedModel.exposure, isActive])
 
-  const { setActiveModelName: setActive } = useActiveModel() as any
-
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
     // Portail: lancer la vidéo d'encre.
@@ -178,11 +176,6 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   const handlePointerOut = useCallback(() => {
     document.body.style.cursor = 'default'
   }, [])
-
-  // Supprimer les handlers de drag pour ne pas interférer avec OrbitControls
-  const handlePointerDown = undefined as any
-  const handlePointerMove = undefined as any
-  const handlePointerUp = undefined as any
 
   return (
     <group
