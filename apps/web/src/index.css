@@ -10,7 +10,8 @@
 
 @font-face {
   font-family: 'Tusker Grotesk 5800 Super';
-  src: url('/fonts/TuskerGrotesk5800Super.ttf') format('truetype');
+  /* Nom de fichier réel dans public/fonts : tusker-grotesk-5800-super.ttf */
+  src: url('/fonts/tusker-grotesk-5800-super.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -26,7 +27,8 @@
 
 @font-face {
   font-family: 'Young Morin';
-  src: url('/fonts/YoungMorin-Regular.ttf') format('truetype');
+  /* Nom de fichier réel dans public/fonts : YoungMorinRegular-JRzjm.ttf */
+  src: url('/fonts/YoungMorinRegular-JRzjm.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -101,6 +103,13 @@ body {
 }
 .sub-title {
   font-family: 'Young Morin', system-ui, sans-serif;
+  /* Hack Safari : élargir la zone de rendu à gauche */
+  padding-inline-start: 0.6em;
+}
+/* ...et compenser visuellement avec un text-indent négatif */
+.sub-title h2 {
+  display: inline-block;
+  text-indent: -0.6em;
 }
 
 /* Titre FEMTOGO : uniquement en contour (pas de remplissage) */

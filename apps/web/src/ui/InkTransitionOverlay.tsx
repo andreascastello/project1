@@ -17,6 +17,13 @@ export const InkTransitionOverlay: React.FC = () => {
   const quoteRef = useRef<HTMLDivElement | null>(null)
   const facetRef = useRef(facet)
 
+  // Détection simple de Safari (hors Chrome iOS) côté client
+  const isSafari =
+    typeof navigator !== 'undefined' &&
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+
+  const inkVideoSrc = isSafari ? '/videos/ink_safari.mov' : '/videos/ink.webm'
+
   useEffect(() => {
     facetRef.current = facet
   }, [facet])
@@ -193,7 +200,7 @@ export const InkTransitionOverlay: React.FC = () => {
       )}
       <video
         ref={videoRef}
-        src="/videos/ink.webm"
+        src={inkVideoSrc}
         playsInline
         muted
         preload="auto"

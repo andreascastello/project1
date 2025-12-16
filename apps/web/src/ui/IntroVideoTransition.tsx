@@ -16,6 +16,13 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
   const bgVideoRef = useRef<HTMLVideoElement | null>(null)
   const fgVideoRef = useRef<HTMLVideoElement | null>(null)
 
+  // Détection simple de Safari (hors Chrome iOS) côté client
+  const isSafari =
+    typeof navigator !== 'undefined' &&
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+
+  const mainVideoSrc = isSafari ? '/videos/intro_safari.mov' : '/videos/intro.webm'
+
   useEffect(() => {
     if (!isActive || !overlayRef.current) return
 
@@ -160,7 +167,7 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
       {/* Vidéo de fond, en transparence au-dessus du fond rouge */}
       <video
         ref={bgVideoRef}
-        src="/videos/intro.webm"
+        src={mainVideoSrc}
         className="absolute inset-0 w-full h-full object-cover"
         muted
         playsInline
@@ -169,7 +176,7 @@ export const IntroVideoTransition: React.FC<IntroVideoTransitionProps> = ({
       {/* Vidéo principale centrée */}
       <video
         ref={fgVideoRef}
-        src="/videos/intro.webm"
+        src={mainVideoSrc}
         className="relative w-full max-w-2xl aspect-video object-cover"
         muted
         playsInline
