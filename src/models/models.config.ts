@@ -66,7 +66,7 @@ export const models: ModelConfig[] = [
     rotation: [0, 0, 0],
     scale: 0.6,
     layer: 'midground',
-    exposure: 50,
+    exposure: 1.5,
     albumTitle: 'FADED FLOWER',
     marqueeSpeedSec: 30,
   },
