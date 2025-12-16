@@ -63,11 +63,47 @@ const WhiteFadeOverlay: React.FC<{ active: boolean }> = ({ active }) => {
   )
 }
 
+const DESKTOP_MIN_WIDTH = 1024
+
+const useIsDesktop = () => {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= DESKTOP_MIN_WIDTH,
+  )
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= DESKTOP_MIN_WIDTH)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return isDesktop
+}
+
 // App wrapper avec tous les providers pour l'expérience 3D
 const App: React.FC = () => {
+  const isDesktop = useIsDesktop()
   const [phase, setPhase] = useState<'intro' | 'main' | 'babyLanding' | 'thanks'>('intro')
   const [babyFadeActive, setBabyFadeActive] = useState(false)
   const [thanksFadeActive, setThanksFadeActive] = useState(false)
+
+  if (!isDesktop) {
+    return (
+      <div className="w-full h-screen bg-white text-black flex flex-col items-center
+      justify-center px-8 text-center">
+        <p className="text-xs tracking-[0.35em] uppercase mb-4">
+          Desktop experience only
+        </p>
+        <p className="text-sm sm:text-base max-w-md">
+          Please visit on a computer.
+        </p>
+      </div>
+    )
+  }
 
   // Écoute globale : quand le PressHoldButton de fin Baby Hayabusa est complété,
   // on lance un fade blanc puis on passe sur la landing Baby.
