@@ -14,6 +14,8 @@ import { LandingHero } from './ui/LandingHero'
 import { BabyLandingHero } from './ui/BabyLandingHero'
 import { ThanksPage } from './ui/ThanksPage'
 import './App.css'
+// Préchargement des modèles 3D (exécute useGLTF.preload pour chaque GLB dès le chargement de l'app)
+import './hooks/useStableModelCache'
 
 // Composant principal de l'application actuelle (expérience 3D)
 const AppContent: React.FC = () => {
