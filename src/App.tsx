@@ -85,26 +85,45 @@ const useIsDesktop = () => {
   return isDesktop
 }
 
-// App wrapper avec tous les providers pour l'expérience 3D
 const App: React.FC = () => {
   const isDesktop = useIsDesktop()
+  const [bootLoading, setBootLoading] = useState(true)
   const [phase, setPhase] = useState<'intro' | 'main' | 'babyLanding' | 'thanks'>('intro')
   const [babyFadeActive, setBabyFadeActive] = useState(false)
   const [thanksFadeActive, setThanksFadeActive] = useState(false)
 
-  if (!isDesktop) {
-    return (
-      <div className="w-full h-screen bg-white text-black flex flex-col items-center
-      justify-center px-8 text-center">
-        <p className="text-xs tracking-[0.35em] uppercase mb-4">
-          Desktop experience only
-        </p>
-        <p className="text-sm sm:text-base max-w-md">
-          Please visit on a computer.
-        </p>
-      </div>
-    )
-  }
+  // Splash de boot blanc tout au début pour laisser le temps aux fontes/GSAP de s'initialiser
+  useEffect(() => {
+    let timeoutId: number | undefined
+    let cancelled = false
+
+    const finish = async () => {
+      try {
+        // Attendre que les polices soient prêtes si l'API est disponible
+        const anyDoc = document as any
+        if (anyDoc.fonts && anyDoc.fonts.ready) {
+          await anyDoc.fonts.ready
+        }
+      } catch {
+        // On ignore silencieusement si l'API n'est pas dispo
+      }
+      if (cancelled) return
+      // Petit délai minimum pour éviter un flash trop court
+      timeoutId = window.setTimeout(() => setBootLoading(false), 400)
+    }
+
+    if (document.readyState === 'complete') {
+      void finish()
+    } else {
+      window.addEventListener('load', finish, { once: true } as any)
+    }
+
+    return () => {
+      cancelled = true
+      if (timeoutId) window.clearTimeout(timeoutId)
+      window.removeEventListener('load', finish as any)
+    }
+  }, [])
 
   // Écoute globale : quand le PressHoldButton de fin Baby Hayabusa est complété,
   // on lance un fade blanc puis on passe sur la landing Baby.
@@ -158,7 +177,18 @@ const App: React.FC = () => {
 
   let content: React.ReactNode
 
-  if (phase === 'intro') {
+  if (!isDesktop) {
+    content = (
+      <div className="w-full h-screen bg-white text-black flex flex-col items-center justify-center px-8 text-center">
+        <p className="text-xs tracking-[0.35em] uppercase mb-4">
+          Desktop experience only
+        </p>
+        <p className="text-sm sm:text-base max-w-md">
+          Please visit on a computer.
+        </p>
+      </div>
+    )
+  } else if (phase === 'intro') {
     content = (
       <LandingHero
         onIntroFinished={() => {
@@ -172,11 +202,11 @@ const App: React.FC = () => {
     content = <ThanksPage />
   } else {
     content = (
-    <ActiveModelProvider>
-      <LoadingProvider>
-        <AppContent />
-      </LoadingProvider>
-    </ActiveModelProvider>
+      <ActiveModelProvider>
+        <LoadingProvider>
+          <AppContent />
+        </LoadingProvider>
+      </ActiveModelProvider>
     )
   }
 
@@ -186,6 +216,13 @@ const App: React.FC = () => {
       {/* Overlay global pour les hints souris (actif sur toutes les phases) */}
       <MouseHintOverlay />
       <WhiteFadeOverlay active={babyFadeActive || thanksFadeActive} />
+      {bootLoading && (
+        <LoadingScreen
+          visible
+          error={null}
+          variant="light"
+        />
+      )}
     </>
   )
 }
