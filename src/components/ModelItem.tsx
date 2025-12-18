@@ -17,7 +17,6 @@ interface ModelItemProps {
 export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onSelect, activeModelName }) => {
   const groupRef = useRef<THREE.Group>(null)
   const materialsRef = useRef<Array<{ mesh: THREE.Mesh, material: any }>>([])
-  const layerObjectsRef = useRef<THREE.Object3D[]>([])
   // La rotation par drag est gérée par OrbitControls côté scène
   const { discoveredNames, facet, playInk } = useActiveModel()
   const isPortal = loadedModel.name === PORTAL_MODEL_NAME
@@ -41,29 +40,6 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
     }
   }, [loadedModel.name])
 
-  useEffect(() => {
-    // Gestion des layers pour le dual-pass renderer :
-    // - Facette baby : tout en couleur (layer 2)
-    // - Facette femtogo :
-    //   - Portail Faded Flower : layer 2 uniquement une fois débloqué, sinon layer 1
-    //   - Autres modèles : layer 2 uniquement lorsqu'ils sont actifs, sinon layer 1
-    let targetLayer = 1
-
-    if (facet === 'baby') {
-      targetLayer = 2
-    } else if (isPortal) {
-      targetLayer = isPortalUnlocked ? 2 : 1
-    } else {
-      targetLayer = isActive ? 2 : 1
-    }
-
-    for (const obj of layerObjectsRef.current) {
-      if (obj && (obj as any).layers && typeof (obj as any).layers.set === 'function') {
-        obj.layers.set(targetLayer)
-      }
-    }
-  }, [facet, isActive, isPortal, isPortalUnlocked])
-
   // Mémoïser le clone pour éviter de le recréer à chaque render
   const clonedScene = useMemo(() => {
     return loadedModel.gltf.scene.clone()
@@ -73,12 +49,22 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
   useEffect(() => {
     const group = groupRef.current
     materialsRef.current = []
-    layerObjectsRef.current = []
     if (!group) return
-
-    const layerObjects: THREE.Object3D[] = []
+    // Calculer la layer cible pour tout ce modèle
+    let targetLayer = 1
+    if (facet === 'baby') {
+      targetLayer = 2
+    } else if (isPortal) {
+      targetLayer = isPortalUnlocked ? 2 : 1
+    } else {
+      targetLayer = isActive ? 2 : 1
+    }
 
     group.traverse((child: any) => {
+      // Appliquer la layer à tout ce qui est dans ce groupe (y compris les wrappers Center, etc.)
+      if ((child as any).layers && typeof (child as any).layers.set === 'function') {
+        child.layers.set(targetLayer)
+      }
       if (!child.isMesh || !child.material) return
       const pushMaterial = (mesh: any, mat: any) => {
         if (!mat.userData.__baseOpacity) {
@@ -86,11 +72,6 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
         }
         mat.transparent = true
         materialsRef.current.push({ mesh, material: mat })
-
-        // Indexer les objets qui portent réellement les materials (meshes) pour changer les layers plus tard
-        if (!layerObjects.includes(mesh)) {
-          layerObjects.push(mesh)
-        }
       }
       if (Array.isArray(child.material)) {
         child.material.forEach((mat: any) => pushMaterial(child, mat))
@@ -98,9 +79,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({ loadedModel, isActive, onS
         pushMaterial(child, child.material)
       }
     })
-
-    layerObjectsRef.current = layerObjects
-  }, [clonedScene])
+  }, [clonedScene, facet, isActive, isPortal, isPortalUnlocked])
 
   // Lerp d'opacité pour faire disparaître les layers background/midground lorsque un modèle est actif
   useFrame((_, dt) => {

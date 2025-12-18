@@ -78,25 +78,6 @@ const DualPassRenderer: React.FC = () => {
       return
     }
 
-    // Facette FEMTOGO, aucun modèle encore actif :
-    // on fait un rendu simple en niveaux de gris pour éviter un écran vide.
-    if (!activeModelName) {
-      // DEBUG : rendre tout ce qui existe (0 + 1 + 2)
-      camera.layers.enable(0)
-      camera.layers.enable(1)
-      camera.layers.enable(2)
-    
-      gl.autoClear = true
-      gl.render(scene, camera)
-    
-      // raycaster voit tout aussi
-      raycaster.layers.enable(0)
-      raycaster.layers.enable(1)
-      raycaster.layers.enable(2)
-    
-      return
-    }
-
     // Save live camera transform
     const livePos = new THREE.Vector3().copy(camera.position)
     const liveQuat = new THREE.Quaternion().copy(camera.quaternion)
