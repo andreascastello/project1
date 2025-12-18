@@ -49,7 +49,7 @@ export const models: ModelConfig[] = [
     name: "Franc-Tireur Partisant",
     facet: 'femtogo',
     path: '/3D/childhood-draco.glb',
-    position: [-13.3, -8.3, 2], // Arrière plan
+    position: [-12.8, -8.2, 2], // Arrière plan
     rotation: [0, degToRad(70), 0],
     scale: 0.8,
     layer: 'foreground',
