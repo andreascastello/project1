@@ -37,4 +37,7 @@ build/
 *.njsproj
 *.sln
 *.sw?
-apps/web/public/videos/*.mov
+
+.cursor/
+.turbo/
+.DS_Store
