@@ -122,7 +122,7 @@ const App: React.FC = () => {
       cancelled = true
       if (timeoutId) window.clearTimeout(timeoutId)
       window.removeEventListener('load', finish as any)
-    }
+  }
   }, [])
 
   // Écoute globale : quand le PressHoldButton de fin Baby Hayabusa est complété,
@@ -202,11 +202,11 @@ const App: React.FC = () => {
     content = <ThanksPage />
   } else {
     content = (
-      <ActiveModelProvider>
-        <LoadingProvider>
-          <AppContent />
-        </LoadingProvider>
-      </ActiveModelProvider>
+    <ActiveModelProvider>
+      <LoadingProvider>
+        <AppContent />
+      </LoadingProvider>
+    </ActiveModelProvider>
     )
   }
 

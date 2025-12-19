@@ -10,12 +10,14 @@ import { SceneLights } from './SceneLights'
 import { ModelCollection } from '../components/ModelCollection'
 import { FluidCameraRig } from './FluidCameraRig'
 import { useStableModelCache } from '../hooks/useStableModelCache'
+import { useScrollLock } from '../hooks/useScrollLock'
 import { models } from '../constants'
 import { getRenderedObject } from '../state/RenderedObjectRegistry'
 import { worldToPercent } from './worldToPercent'
 
 const FOV_DEG = 75
 const FOCUS_DISTANCE_MULTIPLIER = 2.3
+
 function computeFocusFromObject(root: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(root)
   const center = box.getCenter(new THREE.Vector3())
@@ -140,6 +142,9 @@ export const SceneCanvas: React.FC = () => {
   const { activeModelName, setActiveModelName, setCameraTarget, setBgTransformOrigin, setSelectModelByName, addDiscovered } = useActiveModel()
   const loaded = useStableModelCache() // ensure models are loaded
 
+  // Lock scroll quand une 3D est en vue détail
+  useScrollLock(!!activeModelName)
+
   const controlsRef = useRef<any>(null)
   const orbitInterruptRef = useRef(false)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -184,8 +189,7 @@ export const SceneCanvas: React.FC = () => {
     if (!targetObject) return
 
     // compute true center & distance from the actually rendered object
-// compute true center & distance
-const { center, distance } = computeFocusFromObject(targetObject)
+    const { center, distance } = computeFocusFromObject(targetObject)
 
     // Avant de bouger la caméra, déterminer l'origine background à appliquer
     try {
